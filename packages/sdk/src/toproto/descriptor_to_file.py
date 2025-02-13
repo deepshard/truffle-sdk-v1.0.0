@@ -28,7 +28,7 @@ class DescriptorToFile:
         """Initialize the converter."""
         self._indent = "  "
         self._current_level = 0
-
+        
     def convert(self, desc: FileDescriptor) -> str:
         """
         Convert a FileDescriptor to proto file content.
@@ -47,14 +47,14 @@ class DescriptorToFile:
         # Add package
         if desc.package:
             lines.append(f'package {desc.package};\n')
-        
+            
         # Add imports
         for dep in desc.dependencies:
             lines.append(f'import "{dep}";\n')
-        
+            
         # Add options
         lines.extend(self._format_options(desc.options))
-        
+            
         # Add messages
         for message in desc.message_types_by_name.values():
             lines.append(self._format_message(message))
@@ -68,7 +68,7 @@ class DescriptorToFile:
             lines.append(self._format_service(service))
             
         return "\n".join(lines)
-
+        
     def _format_message(self, desc: Descriptor, level: int = 0) -> str:
         """
         Format a message descriptor.
@@ -85,7 +85,7 @@ class DescriptorToFile:
         
         # Add message declaration
         lines.append(f"{indent}message {desc.name} {{")
-        
+            
         # Add nested types
         for nested in desc.nested_types:
             lines.append(self._format_message(nested, level + 1))
@@ -100,7 +100,7 @@ class DescriptorToFile:
             
         lines.append(f"{indent}}}\n")
         return "\n".join(lines)
-
+        
     def _format_enum(self, desc: EnumDescriptor, level: int = 0) -> str:
         """
         Format an enum descriptor.
@@ -123,10 +123,10 @@ class DescriptorToFile:
             lines.append(
                 f"{indent}{self._indent}{value.name} = {value.number};"
             )
-            
+                
         lines.append(f"{indent}}}\n")
         return "\n".join(lines)
-
+        
     def _format_service(self, desc: ServiceDescriptor, level: int = 0) -> str:
         """
         Format a service descriptor.
@@ -150,7 +150,7 @@ class DescriptorToFile:
             
         lines.append(f"{indent}}}\n")
         return "\n".join(lines)
-
+        
     def _format_method(self, method: ServiceDescriptor.Method, level: int) -> str:
         """
         Format a method descriptor.
@@ -191,7 +191,7 @@ class DescriptorToFile:
             parts.append(";")
             
         return " ".join(parts)
-
+        
     def _format_field(self, field: FieldDescriptor, level: int) -> str:
         """
         Format a field descriptor.
@@ -231,7 +231,7 @@ class DescriptorToFile:
             parts.append("]")
             
         return f"{indent}{' '.join(parts)};"
-
+            
     def _format_options(
         self,
         options,

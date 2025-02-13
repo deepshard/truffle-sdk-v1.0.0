@@ -3,7 +3,7 @@ CLI Utilities Package
 
 This package provides core utilities for the Truffle CLI:
 - Logging and output formatting
-- Configuration management
+  - Configuration management
 - Template generation and handling
 - Project validation and verification
 """

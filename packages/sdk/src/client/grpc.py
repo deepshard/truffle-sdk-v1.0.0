@@ -44,12 +44,12 @@ class GRPCClient(TruffleClient):
             ValidationError: If client validation fails
         """
         self.config = ClientConfig(host=host)
-        self.channel = grpc.insecure_channel(host)
+            self.channel = grpc.insecure_channel(host)
         self.stub = sdk_pb2_grpc.TruffleStub(self.channel)
         
         # Validate client on initialization
         RuntimeValidator.validate_client(self)
-
+    
     def perplexity_search(
         self,
         query: str,
@@ -88,10 +88,10 @@ class GRPCClient(TruffleClient):
                 raise ValidationError(response.error)
                 
             return response.response
-            
+
         except grpc.RpcError as e:
             raise ConnectionError("Perplexity search failed", str(e))
-
+    
     def get_models(self) -> List[sdk_pb2.ModelDescription]:
         """
         Get available models.
@@ -115,7 +115,7 @@ class GRPCClient(TruffleClient):
             
         except grpc.RpcError as e:
             raise ConnectionError("Failed to get models", str(e))
-
+    
     def tool_update(self, message: str) -> None:
         """
         Send a tool update.
@@ -130,7 +130,7 @@ class GRPCClient(TruffleClient):
             self.stub.ToolUpdate(sdk_pb2.ToolUpdateRequest(message=message))
         except grpc.RpcError as e:
             raise ConnectionError("Tool update failed", str(e))
-
+    
     def ask_user(
         self, 
         message: str, 
@@ -166,7 +166,7 @@ class GRPCClient(TruffleClient):
             
         except grpc.RpcError as e:
             raise ConnectionError("User request failed", str(e))
-
+    
     def query_embed(
         self, 
         query: str, 
@@ -200,7 +200,7 @@ class GRPCClient(TruffleClient):
             
         except grpc.RpcError as e:
             raise ConnectionError("Embedding query failed", str(e))
-
+    
     def infer(
         self,
         prompt: str,
@@ -277,7 +277,7 @@ class GRPCClient(TruffleClient):
                     
         except grpc.RpcError as e:
             raise ConnectionError("Generation failed", str(e))
-
+    
     def close(self) -> None:
         """Close the client connection."""
         if self.channel:

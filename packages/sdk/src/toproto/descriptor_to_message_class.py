@@ -273,7 +273,7 @@ class DescriptorToMessageClass:
             raise TypeError(
                 f"Cannot convert value '{value}' to {info.type.__name__} "
                 f"for field {info.name}: {e}"
-            )
+            ) 
             
     def _get_python_type(self, field_type: int) -> Type:
         """

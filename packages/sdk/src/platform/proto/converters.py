@@ -237,11 +237,11 @@ def message_to_dict(message) -> dict:
         ValidationError: If conversion fails
     """
     try:
-        return json_format.MessageToDict(
-            message,
-            preserving_proto_field_name=True,
-            including_default_value_fields=True,
-        )
+    return json_format.MessageToDict(
+        message,
+        preserving_proto_field_name=True,
+        including_default_value_fields=True,
+    )
     except Exception as e:
         raise ValidationError(f"Failed to convert message to dict: {str(e)}")
 
@@ -260,6 +260,6 @@ def dict_to_message(data: dict, message_type) -> typing.Any:
         ValidationError: If conversion fails
     """
     try:
-        return json_format.ParseDict(data, message_type())
+    return json_format.ParseDict(data, message_type()) 
     except Exception as e:
         raise ValidationError(f"Failed to convert dict to message: {str(e)}") 

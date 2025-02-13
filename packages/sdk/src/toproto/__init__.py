@@ -7,7 +7,7 @@ Features:
 - Type system for basic and complex types
 - Function and service conversion
 - Message and field generation
-- Documentation preservation
+  - Documentation preservation
 """
 
 from .converter_base import (

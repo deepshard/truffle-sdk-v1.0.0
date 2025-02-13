@@ -81,7 +81,7 @@ class ResponseValidator:
 
 class TypeConverter:
     """Utilities for type conversion."""
-    
+
     @staticmethod
     def to_proto_type(obj: 'TruffleReturnType') -> sdk_pb2.TruffleType:
         """Convert to proto type enum."""
@@ -125,7 +125,7 @@ def validate_context_config(config: ContextConfig) -> None:
     if config.context_idx is not None and config.context_idx < 0:
         raise ValueError("Context index cannot be negative")
     if config.system_prompt is not None and not config.system_prompt.strip():
-        raise ValueError("System prompt cannot be empty if provided")
+        raise ValueError("System prompt cannot be empty if provided") 
 
 
 @dataclasses.dataclass
