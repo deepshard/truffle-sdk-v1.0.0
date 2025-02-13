@@ -1,27 +1,11 @@
 """
 Project Build Command
 
-Handles building and packaging of Truffle projects.
-Verified against deprecated SDK version 0.5.3.
-
-Verification Status:
-✓ Command Structure
-  - Arguments and options match deprecated version
-  - Help text and documentation
-  - Error handling patterns
-  - Return types
-
-✓ Build Process
-  - Project validation
-  - File compression
-  - Package generation
-  - Size reporting
-
-✓ Logging Output
-  - File operations
-  - Success/error states
-  - Metrics display
-  - Proper grouping
+This module handles the building and packaging of Truffle projects. It provides functionality to:
+- Validate project structure and required files
+- Package project files into a distributable .truffle archive
+- Report build metrics and file sizes
+- Ensure proper compression and organization of project assets
 """
 
 import typer
@@ -47,7 +31,6 @@ def _format_size(size_bytes: int) -> str:
 def _assemble_zip(dir_path: Path, output_path: Optional[Path] = None) -> Path:
     """
     Create a zip file from a directory and all its contents.
-    Verified against deprecated version's zip creation logic.
     
     Args:
         dir_path: Path to the directory to zip

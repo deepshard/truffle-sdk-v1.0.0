@@ -1,6 +1,6 @@
 # Truffle SDK
 
-Core SDK and CLI tools for the Truffle AI platform.
+Core SDK and CLI tools.
 
 ## Structure
 

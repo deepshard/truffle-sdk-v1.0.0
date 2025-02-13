@@ -1,29 +1,17 @@
 """
 Project Template Utilities
 
-Core template utilities for Truffle projects.
-Verified against deprecated SDK version 0.5.3.
-
-Verification Status:
-✓ Template Management
-  - File generation
-  - Template rendering
-  - Variable substitution
-  - Asset handling
-
-✓ Project Templates
-  - main.py template
-  - manifest.json template
-  - requirements.txt template
-  - Example projects
+This module provides template generation utilities for Truffle projects:
+- Generates project file templates (main.py, manifest.json)
+- Handles template variable substitution
+- Manages project asset copying and organization
+- Provides default project templates and resources
 """
 
-import json
 import shutil
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 
-from .logger import log
 from .config import get_sdk_version
 
 def generate_main_py(project_name: str, manifest: Dict[str, Any]) -> str:

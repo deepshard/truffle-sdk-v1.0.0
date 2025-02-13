@@ -1,70 +1,13 @@
 """
 Tool Decorators Module
 
-This module provides decorators for defining and configuring Truffle tools.
+This module provides decorators for defining and configuring Truffle tools:
 
-Verified Components:
-- Core Decorators ✓
-  - @tool decorator with name, description, icon
-  - @args decorator for argument descriptions
-  - Return type validation
-  - Argument validation
-
-- Function Management ✓
-  - Metadata preservation
-  - Type checking
-  - Signature validation
-  - Documentation handling
-
-- Tool Configuration ✓
-  - Name handling
-  - Description management
-  - Icon support
-  - Argument descriptions
-
-All implementations verified against deprecated SDK version 0.5.3.
-
-TO MIGRATE:
-1. Core Decorators (from __init__.py):
-   - @tool(description: str = None, icon: str = None)
-     - Sets __truffle_tool__ = True
-     - Sets __truffle_icon__ = icon
-     - Sets __truffle_description__ = description
-     - Handles TruffleReturnType detection
-   
-   - @args(**kwargs)
-     - Sets __truffle_args__ = kwargs
-     - Must be applied before @tool
-
-2. Return Type Handling:
-   - Check for TruffleReturnType subclasses
-   - Set __truffle_type__ = ret_type.__name__
-   - Support for TruffleFile and TruffleImage
-
-3. Function Attribute Management:
-   - __truffle_tool__: bool
-   - __truffle_icon__: Optional[str]
-   - __truffle_description__: Optional[str]
-   - __truffle_args__: Optional[Dict]
-   - __truffle_type__: Optional[str]
-
-4. Validation and Type Checking:
-   - Ensure decorators are applied in correct order
-   - Validate icon names (SF Symbols)
-   - Check return type annotations
-   - Verify argument specifications
-
-INTEGRATION NOTES:
-- Must maintain compatibility with existing tool definitions
-- Decorators must work with both function and method definitions
-- Return type detection must match TruffleReturnType hierarchy
-- Must preserve all function metadata and docstrings
-
-DEPENDENCIES:
-- typing
-- inspect
-- functools.wraps
-- types.models.TruffleReturnType
+Core Features:
+- @tool decorator for configuring tool name, description, and icon
+- @args decorator for specifying argument descriptions
+- Type validation and safety checks
+- Function metadata handling
 """
 
 import functools
@@ -83,6 +26,16 @@ class ToolConfig:
     icon: typing.Optional[str] = None
     args: typing.Dict[str, str] = None
 
+    def to_metadata(self) -> 'ToolMetadata':
+        """Convert config to ToolMetadata."""
+        from ..types.models import ToolMetadata
+        return ToolMetadata(
+            name=self.name,
+            description=self.description,
+            icon=self.icon,
+            args=self.args or {}
+        )
+
 def tool(
     name: str = None,
     description: str = None,
@@ -95,6 +48,12 @@ def tool(
         name: Optional name for the tool (defaults to function name)
         description: Optional description of what the tool does
         icon: Optional icon URL or emoji for the tool
+        
+    Returns:
+        Decorated function
+        
+    Raises:
+        ValidationError: If function signature is invalid
     """
     def decorator(func: typing.Callable) -> typing.Callable:
         # Get function signature and docstring
@@ -138,6 +97,12 @@ def args(**arg_descriptions: str) -> typing.Callable:
     
     Args:
         **arg_descriptions: Mapping of argument names to their descriptions
+        
+    Returns:
+        Decorated function
+        
+    Raises:
+        ValidationError: If function is not a tool or arguments are invalid
     """
     def decorator(func: typing.Callable) -> typing.Callable:
         # Validate function is a tool

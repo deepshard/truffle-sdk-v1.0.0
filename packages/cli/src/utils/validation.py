@@ -1,21 +1,11 @@
 """
 Validation Utilities Module
 
-Core validation utilities for Truffle CLI.
-Verified against deprecated SDK version 0.5.3.
-
-Verification Status:
-✓ Project Validation
-  - Structure checks
-  - File validation
-  - Content validation
-  - Permission checks
-
-✓ Tool Validation
-  - Class structure
-  - Method decorators
-  - Launch patterns
-  - Import checks
+This module provides core validation utilities for the Truffle CLI:
+- Project structure and file validation
+- Tool class and method validation
+- Import and dependency checking
+- Error handling and reporting
 """
 
 import ast
@@ -29,7 +19,6 @@ from .logger import log
 def validate_project_structure(project_path: Path) -> bool:
     """
     Validate the basic structure of a Truffle project.
-    Verified against deprecated version's structure checks.
     
     Args:
         project_path: Path to project directory

@@ -1,23 +1,11 @@
 """
 Template System
 
-Core implementation of the CLI template system for project initialization.
-Provides templates and generators for creating new Truffle projects.
-
-Verified Components:
-- Project Templates ✓
-  - Basic app template
-  - Tool template
-  - Service template
-  - Custom templates
-
-- File Generation ✓
-  - main.py generation
-  - manifest.json generation
-  - requirements.txt generation
-  - Resource handling
-
-All implementations verified against deprecated SDK version 0.5.3.
+This module implements the CLI template system for project initialization:
+- Provides template generators for creating new Truffle projects
+- Includes validation utilities for project structure
+- Manages file generation and resource handling
+- Supports multiple project template types
 """
 
 from .app import generate_main_py, generate_manifest

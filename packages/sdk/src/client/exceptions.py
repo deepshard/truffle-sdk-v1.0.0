@@ -1,18 +1,11 @@
 """
-Exception classes for the Truffle SDK client.
+Exception Classes Module
 
-This module provides a comprehensive set of exceptions for handling
-various error conditions in the SDK client.
-
-Verified Components:
-- Base Exception Types ✓
-- Error Hierarchy ✓
-- Error Context Handling ✓
-- Error Utilities ✓
-- Integration with gRPC ✓
-
-All implementations verified against deprecated SDK version 0.5.3.
-Includes enhancements for better error handling and context preservation.
+This module provides a comprehensive set of exceptions for the SDK client:
+- Structured error hierarchy for different failure modes
+- Rich error context and details preservation
+- Integration with gRPC error handling
+- Type-safe error construction and handling
 """
 
 import typing

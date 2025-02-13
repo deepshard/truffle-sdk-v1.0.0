@@ -1,23 +1,11 @@
 """
 CLI Logging System
 
-Core implementation of the CLI logging and output formatting.
-Provides rich console output with emoji support and structured logging.
-
-Verified Components:
-- Console Output ✓
-  - Rich formatting
-  - Emoji support
-  - Color schemes
-  - Progress tracking
-
-- Log Levels ✓
-  - Info messages
-  - Error handling
-  - Success states
-  - Debug output
-
-All implementations verified against deprecated SDK version 0.5.3.
+This module implements a rich console logging system for the Truffle CLI:
+- Provides color-coded output with emoji support
+- Implements structured logging with multiple levels
+- Supports progress tracking and metrics display
+- Handles error and warning formatting with details
 """
 
 from dataclasses import dataclass

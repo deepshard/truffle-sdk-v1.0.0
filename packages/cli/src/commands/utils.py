@@ -1,38 +1,21 @@
 """
 CLI Utilities Module
 
-Common utilities for CLI commands.
-Verified against deprecated SDK version 0.5.3.
-
-Verification Status:
-✓ Project Utilities
-  - Project validation
-  - File operations
-  - Path handling
-  - Error handling
-
-✓ Configuration
-  - Manifest handling
-  - Requirements handling
-  - Version management
-  - Project setup
-
-✓ Common Operations
-  - File validation
-  - Path resolution
-  - Error formatting
-  - Type safety
+This module provides common utilities for CLI commands, including:
+- Project configuration management
+- File validation and verification
+- Package requirement handling
+- Project structure validation
 """
 
 import ast
-import json
 import re
 import tomli
 import tomli_w
 from pathlib import Path
-from typing import Optional, Dict, Any, List
+from typing import Optional
 
-from utils.logger import log, Symbols
+from utils.logger import log
 
 def update_pyproject(
     pyproject_path: Path,
@@ -41,7 +24,6 @@ def update_pyproject(
 ) -> None:
     """
     Update the project name and description in pyproject.toml.
-    Verified against deprecated version's config update logic.
     
     Args:
         pyproject_path: Path to pyproject.toml
@@ -75,8 +57,7 @@ def update_pyproject(
 
 def validate_requirements_txt(requirements_file: Path) -> bool:
     """
-    Validate requirements.txt file.
-    Verified against deprecated version's validation logic.
+    Validate requirements.txt file structure and content.
     
     Args:
         requirements_file: Path to requirements.txt
@@ -114,8 +95,7 @@ def validate_requirements_txt(requirements_file: Path) -> bool:
 
 def validate_main_py(main_py_file: Path) -> bool:
     """
-    Validate main.py file.
-    Verified against deprecated version's validation logic.
+    Validate main.py file structure and content.
     
     Args:
         main_py_file: Path to main.py

@@ -1,35 +1,17 @@
 """
 Function to Proto Converter
 
-Core implementation of Python function to protobuf message conversion.
-Handles automatic conversion of Python functions to proto definitions.
+Core implementation of Python function to protobuf message conversion:
 
-Verified Components:
-- Function Analysis ✓
-  - Signature parsing with type annotations
-  - Return type validation and extraction
-  - Docstring preservation
-  - Async/Generator detection
-
-- Message Generation ✓
-  - Request message creation
-  - Response message creation
-  - Field mapping and validation
-  - Type conversion and safety
-
-- Type Handling ✓
-  - Basic type mapping
-  - Complex type support (List, Dict, Optional)
-  - Custom type registration
-  - Validation rules
-
-All implementations verified against deprecated SDK version 0.5.3.
-Line count optimized from 446 to 207 lines through improved inheritance.
+Features:
+- Function signature analysis and parsing
+- Request/response message generation
+- Type annotation handling and validation
+- Async and generator function support
 """
 
 import typing
 import inspect
-import ast
 from dataclasses import dataclass
 from google.protobuf.descriptor import FieldDescriptor
 

@@ -1,33 +1,13 @@
 """
 Tool Utilities Module
 
-Core utility functions for tool management and validation.
-Implements exact functionality from deprecated SDK version 0.5.3.
+Core utility functions for tool management and validation:
 
-Core Components:
-1. Type System
-   - Type validation
-   - Type conversion
-   - Protocol buffers
-   - Custom types
-
-2. Tool Management
-   - Function inspection
-   - Metadata handling
-   - Argument processing
-   - Error handling
-
-3. Path Operations
-   - Path validation
-   - File operations
-   - Directory handling
-   - Permission checks
-
-4. String Processing
-   - Sanitization
-   - Formatting
-   - Validation
-   - Error messages
+Features:
+- Type validation and conversion
+- Function inspection and metadata
+- Path operations and validation
+- String processing and sanitization
 """
 
 import inspect
@@ -36,12 +16,11 @@ import warnings
 import os
 from pathlib import Path
 from typing import (
-    Any, Dict, List, Optional, Set, Tuple, Type, Union, 
+    Any, Dict, Optional, Tuple, Type, Union,
     get_type_hints, get_origin, get_args
 )
 
 from ..platform import sdk_pb2
-from ..platform.proto import validation, converters
 
 # Type definitions
 ArgSpec = Dict[str, Any]
@@ -271,29 +250,12 @@ def validate_tool_args(
         if name not in metadata['args']:
             raise ValueError(f"Unknown argument: {name}")
             
-        spec = metadata['args'][name]
-        expected_type = spec['type']
-        
-        # Convert value if needed
-        try:
-            value = converters.convert_value(value, expected_type)
-        except Exception as e:
-            raise TypeError(f"Failed to convert argument {name}: {e}")
-            
-        # Validate type
+        expected_type = metadata['args'][name]['type']
         if not validate_return_type(value, expected_type):
             raise TypeError(
                 f"Invalid type for argument {name}: "
                 f"expected {expected_type}, got {type(value)}"
             )
-            
-        # Validate with custom validators
-        if 'validators' in spec:
-            for validator in spec['validators']:
-                try:
-                    validator(value)
-                except Exception as e:
-                    raise ValueError(f"Validation failed for argument {name}: {e}")
 
 def format_error(error: Exception, tool_name: str) -> sdk_pb2.SDKResponse:
     """

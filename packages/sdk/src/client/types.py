@@ -1,31 +1,25 @@
 """
-Type definitions and utilities for the Truffle SDK client.
+Type Definitions Module
 
-This module provides type definitions, validation, and utility functions
-for working with client-specific types.
-
-Verified Components:
-- Configuration Types ✓
-  - ClientConfig
-  - ModelConfig
-  - ContextConfig
-- Validation Functions ✓
-  - Response validation
-  - Config validation
-  - Type checking
-- Type Conversion ✓
-  - Proto conversion
-  - Role mapping
-  - Data handling
-
-All implementations verified against deprecated SDK version 0.5.3.
-Includes enhancements for better type safety and validation.
+This module provides type definitions and utilities for the SDK client:
+- Configuration dataclasses for client settings
+- Response validation and type checking
+- Protocol buffer type conversion
+- Type-safe data handling utilities
+- Runtime validation system
 """
 
 import typing
 import dataclasses
+import grpc
+from typing import TYPE_CHECKING
+
 from ..platform import sdk_pb2
-from ..types import TruffleReturnType
+from .exceptions import ValidationError, ConnectionError
+
+if TYPE_CHECKING:
+    from ..types.models import TruffleReturnType
+    from .base import TruffleClient
 
 
 @dataclasses.dataclass
@@ -87,35 +81,21 @@ class ResponseValidator:
 
 class TypeConverter:
     """Utilities for type conversion."""
+    
+    @staticmethod
+    def to_proto_type(obj: 'TruffleReturnType') -> sdk_pb2.TruffleType:
+        """Convert to proto type enum."""
+        return obj.type
 
     @staticmethod
-    def to_proto_content(
-        role: str,
-        content: str,
-        data: typing.Optional[bytes] = None
-    ) -> sdk_pb2.Content:
-        """Convert to proto Content message."""
-        role_map = {
-            "system": sdk_pb2.Content.ROLE_SYSTEM,
-            "user": sdk_pb2.Content.ROLE_USER,
-            "ai": sdk_pb2.Content.ROLE_AI,
+    def from_proto_type(type_enum: sdk_pb2.TruffleType) -> typing.Type['TruffleReturnType']:
+        """Get Python type from proto enum."""
+        from ..types.models import TruffleFile, TruffleImage, TruffleReturnType
+        type_map = {
+            sdk_pb2.TruffleType.TRUFFLE_TYPE_FILE: TruffleFile,
+            sdk_pb2.TruffleType.TRUFFLE_TYPE_IMAGE: TruffleImage,
         }
-        proto_role = role_map.get(role.lower(), sdk_pb2.Content.ROLE_INVALID)
-        return sdk_pb2.Content(role=proto_role, content=content, data=data)
-
-    @staticmethod
-    def from_proto_content(content: sdk_pb2.Content) -> typing.Dict[str, typing.Any]:
-        """Convert from proto Content message."""
-        role_map = {
-            sdk_pb2.Content.ROLE_SYSTEM: "system",
-            sdk_pb2.Content.ROLE_USER: "user",
-            sdk_pb2.Content.ROLE_AI: "ai",
-        }
-        return {
-            "role": role_map.get(content.role, "invalid"),
-            "content": content.content,
-            "data": content.data if content.HasField("data") else None,
-        }
+        return type_map.get(type_enum, TruffleReturnType)
 
 
 def validate_client_config(config: ClientConfig) -> None:
@@ -138,8 +118,6 @@ def validate_model_config(config: ModelConfig) -> None:
         raise ValueError("Max tokens must be positive")
     if not 0 <= config.temperature <= 1:
         raise ValueError("Temperature must be between 0 and 1")
-    if config.format_type and config.format_type not in ["TEXT", "JSON"]:
-        raise ValueError("Format type must be either TEXT or JSON")
 
 
 def validate_context_config(config: ContextConfig) -> None:
@@ -147,4 +125,39 @@ def validate_context_config(config: ContextConfig) -> None:
     if config.context_idx is not None and config.context_idx < 0:
         raise ValueError("Context index cannot be negative")
     if config.system_prompt is not None and not config.system_prompt.strip():
-        raise ValueError("System prompt cannot be empty if provided") 
+        raise ValueError("System prompt cannot be empty if provided")
+
+
+@dataclasses.dataclass
+class RuntimeValidator:
+    """Runtime validation utilities for client operations."""
+    
+    @staticmethod
+    def validate_client(client: 'TruffleClient') -> None:
+        """
+        Validate client configuration and connection.
+        
+        Args:
+            client: TruffleClient instance to validate
+            
+        Raises:
+            ValidationError: If client configuration is invalid
+            ConnectionError: If client connection fails
+        """
+        # Validate client setup
+        if not client.channel:
+            raise ValidationError("Client channel not initialized")
+        if not client.stub:
+            raise ValidationError("Client stub not initialized")
+            
+        # Test connection
+        try:
+            # Attempt to list models as connection test
+            client.get_models()
+        except grpc.RpcError as e:
+            raise ConnectionError(
+                "Failed to connect to Truffle service",
+                str(e)
+            )
+        except Exception as e:
+            raise ValidationError(f"Client validation failed: {str(e)}") 

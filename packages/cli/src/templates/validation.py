@@ -1,28 +1,15 @@
 """
 Template Validation
 
-Core implementation of template validation utilities.
-Provides functions for validating generated files and project structure.
-
-Verified Components:
-- File Validation ✓
-  - main.py validation
-  - manifest.json validation
-  - requirements.txt validation
-  - Import checking
-
-- Structure Validation ✓
-  - Project layout
-  - File presence
-  - Content validation
-  - Version checking
-
-All implementations verified against deprecated SDK version 0.5.3.
+This module provides validation utilities for Truffle project files and structure:
+- Validates main.py files for required imports and structure
+- Validates manifest.json files for required fields and types
+- Validates requirements.txt files for SDK dependencies
+- Ensures proper project layout and file organization
 """
 
 import re
 import json
-import typing
 from pathlib import Path
 
 def validate_main_py(main_py_file: Path) -> bool:

@@ -1,38 +1,21 @@
 """
 Function to Service Converter
 
-Core implementation of Python function to gRPC service conversion.
-Provides automatic conversion of Python functions and classes to gRPC services.
+Core implementation of Python function to gRPC service conversion:
 
-Verified Components:
-- Service Generation ✓
-  - Service class parsing
-  - Method collection and validation
-  - Stream detection (client/server)
-  - Documentation preservation
-
-- Method Generation ✓
-  - Request/Response messages
-  - Stream handling
-  - Type safety
-  - Error handling
-
-- gRPC Integration ✓
-  - Service descriptors
-  - Method descriptors
-  - Proto compatibility
-  - Validation rules
-
-All implementations verified against deprecated SDK version 0.5.3.
-Line count optimized from 305 to 186 lines through improved inheritance.
+Features:
+- Service and method generation
+- Class and function parsing
+- Stream handling support
+- gRPC descriptor creation
 """
 
 import typing
 import inspect
 from dataclasses import dataclass
-from google.protobuf.descriptor import ServiceDescriptor, MethodDescriptor
+from google.protobuf.descriptor import ServiceDescriptor
 
-from .converter_base import ConverterBase, ProtoService, ProtoMethod
+from .converter_base import ProtoService, ProtoMethod
 from .func_to_proto import FunctionConverter, FunctionSpec
 from ..client.exceptions import ValidationError
 

@@ -1,23 +1,11 @@
 """
 App Template Generation
 
-Core implementation of Truffle app template generation.
-Provides functions for generating main.py and manifest.json files.
-
-Verified Components:
-- Main File Generation ✓
-  - Class template
-  - Tool decorators
-  - Method stubs
-  - Launch code
-
-- Manifest Generation ✓
-  - Project metadata
-  - Example prompts
-  - Package info
-  - Bundle ID
-
-All implementations verified against deprecated SDK version 0.5.3.
+This module provides template generation functionality for Truffle apps:
+- Generates main.py files with proper class and method structure
+- Creates manifest.json files with project metadata
+- Sets up requirements.txt with correct dependencies
+- Handles project file organization and creation
 """
 
 import uuid
