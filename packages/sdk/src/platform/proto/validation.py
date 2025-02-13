@@ -1,22 +1,11 @@
 """
 Proto Validation Utilities
 
-Core implementation of validation functions for proto message handling.
-
-Verified Components:
-- Type Validation ✓
-  - Truffle type validation
-  - Proto type validation
-  - Content validation
-  - Role validation
-
-- Message Validation ✓
-  - Request validation
-  - Response validation
-  - Metadata validation
-  - Error validation
-
-All implementations verified against deprecated SDK version 0.5.3.
+This module provides validation functions for protobuf messages:
+- Type validation for Truffle and proto types
+- Content and role validation
+- Request and response message validation
+- Metadata validation utilities
 """
 
 import typing

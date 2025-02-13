@@ -1,55 +1,11 @@
 """
-Base client implementation providing core functionality for the Truffle SDK.
+Base Client Implementation Module
 
-This module implements the TruffleClient class which provides a pythonic interface
-to access the core functionality of the Truffle platform.
-
-Verified Components:
-- Socket Configuration ✓
-- Client Interface ✓
-- API Methods ✓
-- Context Management ✓
-- Error Handling ✓
-- Type Safety ✓
-
-All implementations verified against deprecated SDK version 0.5.3.
-
-Source File: truffle/client.py (315 lines)
-Target: packages/sdk/src/client/base.py
-
-Core Components to Migrate:
-1. Client Interface:
-   - [ ] TruffleClient base class
-   - [ ] Abstract methods
-   - [ ] Type definitions
-   - [ ] Context management
-
-2. Socket Configuration:
-   - [ ] APP_SOCK = os.getenv("TRUFFLE_APP_SOCKET") or "unix:///tmp/truffle_app.sock"
-   - [ ] SDK_SOCK = os.getenv("TRUFFLE_SDK_SOCKET") or "unix:///tmp/truffle_sdk.sock"
-   - [ ] SHARED_FILES_DIR = os.getenv("TRUFFLE_SHARED_DIR") or "/root/shared"
-
-3. Required Methods:
-   - [ ] perplexity_search(query: str, model: str = "sonar", response_fmt=None, system_prompt: str = "") -> str
-   - [ ] get_models() -> list[platform.sdk_pb2.ModelDescription]
-   - [ ] tool_update(message: str) -> None
-   - [ ] ask_user(message: str, reason: str = "Tool needs input to continue.") -> Dict[str, Union[str, List[str]]]
-   - [ ] query_embed(query: str, documents: List[str]) -> List[Tuple[str, float]]
-   - [ ] infer(prompt: str, model_id: int = 0, system_prompt: str | None = None, 
-          context_idx: int | None = None, max_tokens: int = 1000,
-          temperature: float = 0.7, format_type: str = None, schema: str = None) -> Iterator[str]
-   - [ ] close() -> None
-
-4. Context Management:
-   - [ ] Model context list initialization
-   - [ ] Context history handling (ROLE_SYSTEM, ROLE_USER, ROLE_AI)
-   - [ ] System prompt and context index validation
-
-Dependencies:
-- typing
-- os
-- platform.sdk_pb2
-- platform.sdk_pb2_grpc
+This module implements the core TruffleClient class that provides:
+- Platform API access and method implementations
+- Socket configuration and management
+- Context and conversation handling
+- Type-safe interface to platform features
 """
 
 import os

@@ -1,27 +1,11 @@
 """
 Project Initialization Command
 
-Handles creation of new Truffle projects.
-Verified against deprecated SDK version 0.5.3.
-
-Verification Status:
-✓ Command Structure
-  - Arguments and options match deprecated version
-  - Help text and documentation
-  - Error handling patterns
-  - Return types
-
-✓ Project Creation
-  - Directory structure
-  - File generation
-  - Template rendering
-  - Manifest creation
-
-✓ Logging Output
-  - Progress indicators
-  - File operations
-  - Success/error states
-  - User prompts
+This module handles the creation of new Truffle projects. It provides functionality to:
+- Create new project directories with proper structure
+- Generate necessary project files (main.py, manifest.json, requirements.txt)
+- Collect and store project metadata and example prompts
+- Set up initial project configuration and dependencies
 """
 
 import typer

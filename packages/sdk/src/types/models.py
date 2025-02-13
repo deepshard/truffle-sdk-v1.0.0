@@ -1,14 +1,14 @@
 """
-Core type system implementation for the Truffle SDK.
+Core Type System Implementation
 
-This module provides the foundational type system including:
+Core types and classes for the Truffle SDK:
+
+Features:
 - TruffleReturnType: Base class for all return types
 - TruffleFile: File handling and operations
-- TruffleImage: Image handling with multiple source types (url, base64, raw)
+- TruffleImage: Image handling (url, base64, raw)
 - ToolMetadata: Tool registration and metadata
 - ToolRegistry: Tool management and validation
-
-All implementations verified against deprecated SDK version 0.5.3.
 """
 
 import base64

@@ -1,55 +1,19 @@
 """
 CLI Commands Package Initialization
 
-Core implementation of the Truffle CLI commands.
-Provides command registration and routing for the CLI application.
+This package implements the core Truffle CLI commands and functionality:
+- Project initialization (init.py)
+- Project building (build.py)
+- Project execution (run.py)
 
-Migration Status:
-[INCOMPLETE] CLI Commands Setup
-- [x] Core commands
-- [ ] Asset handling
-- [ ] Template system
-
-Core Components (from truffle/truffle_cli.py):
-1. Command Structure:
-   - [x] init.py - Project initialization
-   - [x] build.py - Build command
-   - [x] run.py - Run command
-
-2. Asset Integration:
-   - [ ] cli_assets/ directory
-   - [ ] Template files
-   - [ ] Resource management
-
-3. Command Features:
-   - [x] Project validation
-   - [x] Build process
-   - [x] Runtime management
-   - [ ] Template handling
-
-Missing Components:
-1. CLI Assets:
-   - [ ] Icon templates
-   - [ ] Project templates
-   - [ ] Resource files
-
-2. Template System:
-   - [ ] Template rendering
-   - [ ] Resource copying
-   - [ ] Asset management
-
-Source Files:
-- Original: truffle/truffle_cli.py
-- Split into:
-  - init.py: Project creation
-  - build.py: Build process
-  - run.py: Runtime management
+The package uses Typer for command-line interface management and provides
+a clean, modular structure for handling different CLI operations.
 
 Dependencies:
-- typer
-- pathlib
-- platform.models
-- utils.templates
+- typer: Command-line interface framework
+- pathlib: Path manipulation utilities
+- platform.models: Core platform models
+- utils.templates: Template management
 """
 
 import typer

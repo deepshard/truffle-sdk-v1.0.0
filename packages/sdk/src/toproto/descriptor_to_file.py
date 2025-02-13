@@ -1,27 +1,13 @@
 """
 Descriptor to File Converter Module
 
-Converts protocol buffer descriptors to file content.
-Based on deprecated SDK version 0.5.3.
+Converts protocol buffer descriptors to file content:
 
-Core Components:
-1. File Generation
-   - Proto file content
-   - Package declarations
-   - Import statements
-   - Options
-
-2. Message Generation
-   - Message definitions
-   - Field declarations
-   - Nested types
-   - Options
-
-3. Service Generation
-   - Service definitions
-   - RPC methods
-   - Stream types
-   - Options
+Features:
+- Proto file generation
+- Message and field formatting
+- Service and RPC method handling
+- Option and import management
 """
 
 import textwrap

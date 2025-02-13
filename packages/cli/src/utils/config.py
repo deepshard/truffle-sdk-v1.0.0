@@ -1,21 +1,11 @@
 """
 Configuration Utilities Module
 
-Core configuration management for Truffle CLI.
-Verified against deprecated SDK version 0.5.3.
-
-Verification Status:
-✓ Configuration Management
-  - File loading/saving
-  - Schema validation
-  - Version handling
-  - Error handling
-
-✓ Project Configuration
-  - manifest.json
-  - pyproject.toml
-  - requirements.txt
-  - Build settings
+This module provides configuration management utilities for the Truffle CLI:
+- Handles manifest.json file operations and validation
+- Manages pyproject.toml configuration
+- Processes requirements.txt dependencies
+- Provides version management utilities
 """
 
 import json
@@ -39,7 +29,6 @@ def get_sdk_version() -> str:
 def load_manifest(manifest_path: Path) -> Dict[str, Any]:
     """
     Load and validate manifest.json.
-    Verified against deprecated version's manifest handling.
     
     Args:
         manifest_path: Path to manifest.json
@@ -97,7 +86,6 @@ def update_manifest(
 ) -> None:
     """
     Update or create manifest.json.
-    Verified against deprecated version's manifest updates.
     
     Args:
         manifest_path: Path to manifest.json
@@ -144,7 +132,6 @@ def update_manifest(
 def load_pyproject(pyproject_path: Path) -> Dict[str, Any]:
     """
     Load and validate pyproject.toml.
-    Verified against deprecated version's TOML handling.
     
     Args:
         pyproject_path: Path to pyproject.toml
@@ -179,7 +166,6 @@ def update_pyproject(
 ) -> None:
     """
     Update or create pyproject.toml.
-    Verified against deprecated version's TOML updates.
     
     Args:
         pyproject_path: Path to pyproject.toml
@@ -217,7 +203,6 @@ def format_requirements(
 ) -> str:
     """
     Format requirements.txt content.
-    Verified against deprecated version's requirements handling.
     
     Args:
         packages: Package names and versions
@@ -239,7 +224,6 @@ def format_requirements(
 def validate_version_spec(version: str) -> bool:
     """
     Validate version specification string.
-    Verified against deprecated version's version handling.
     
     Args:
         version: Version string to validate

@@ -1,74 +1,15 @@
 """
 Request Type Definitions
 
-Verified Components:
-- Request Types ✓
-  - GenerateRequest
-  - GetModelsRequest
-  - SystemToolRequest
-  - ToolUpdateRequest
-  - UserRequest
-  - EmbedRequest
+Core request types for the Truffle SDK:
 
-- Type System ✓
-  - Validation
-  - Conversion
-  - Error handling
-  - Documentation
-
-All implementations verified against deprecated SDK version 0.5.3.
-
-Migration Status:
-[INCOMPLETE] Request Types Implementation
-- [ ] Core request types
-- [ ] Validation system
-- [ ] Type conversion
-
-Core Components to Migrate:
-1. Request Types:
-   - [ ] GenerateRequest
-   - [ ] GetModelsRequest
-   - [ ] SystemToolRequest
-   - [ ] ToolUpdateRequest
-   - [ ] UserRequest
-   - [ ] EmbedRequest
-
-2. Request Validation:
-   - [ ] Input validation
-   - [ ] Type checking
-   - [ ] Schema validation
-   - [ ] Error handling
-
-3. Type Conversion:
-   - [ ] Proto conversion
-   - [ ] JSON serialization
-   - [ ] Type mapping
-   - [ ] Format handling
-
-4. Request Processing:
-   - [ ] Request building
-   - [ ] Parameter validation
-   - [ ] Default handling
-   - [ ] Error wrapping
-
-Source Components (from client.py):
-1. Request Building:
-   - Request construction
-   - Parameter handling
-   - Type validation
-   - Error management
-
-2. Request Types:
-   - Model requests
-   - Tool requests
-   - User interaction
-   - System operations
-
-Dependencies:
-- typing
-- dataclasses
-- platform.sdk_pb2
-- platform.models
+Features:
+- GenerateRequest: Model text generation
+- GetModelsRequest: Available model listing
+- SystemToolRequest: System tool operations
+- ToolUpdateRequest: Tool status updates
+- UserRequest: User interaction handling
+- EmbedRequest: Text embedding generation
 """
 
 from dataclasses import dataclass, field

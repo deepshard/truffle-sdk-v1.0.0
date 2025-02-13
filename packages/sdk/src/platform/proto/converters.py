@@ -1,22 +1,11 @@
 """
 Proto Conversion Utilities
 
-Core implementation of conversion functions between Python types and protobuf messages.
-
-Verified Components:
-- Type Conversion ✓
-  - TruffleType conversion
-  - Content message handling
-  - Tool request/response
-  - Error wrapping
-
-- Message Handling ✓
-  - Request messages
-  - Response messages
-  - Stream messages
-  - Error messages
-
-All implementations verified against deprecated SDK version 0.5.3.
+This module provides conversion functions between Python types and protobuf messages:
+- Type conversion between Truffle types and proto enums
+- Content message serialization and deserialization
+- Tool request/response message handling
+- Metadata conversion utilities
 """
 
 import typing

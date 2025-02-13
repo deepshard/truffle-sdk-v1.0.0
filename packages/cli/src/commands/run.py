@@ -1,27 +1,11 @@
 """
 Project Run Command
 
-Handles execution of Truffle projects.
-Verified against deprecated SDK version 0.5.3.
-
-Verification Status:
-✓ Command Structure
-  - Arguments and options match deprecated version
-  - Help text and documentation
-  - Error handling patterns
-  - Return types
-
-✓ Project Execution
-  - Environment setup
-  - Package loading
-  - Tool invocation
-  - Error handling
-
-✓ Logging Output
-  - File operations
-  - Success/error states
-  - Performance metrics
-  - Proper grouping
+This module handles the execution of Truffle projects. It provides functionality to:
+- Load and validate Truffle tool classes
+- Set up runtime environments for tools
+- Execute tools with optional arguments
+- Handle execution errors and logging
 """
 
 import typer
@@ -61,7 +45,6 @@ class MethodVisitor(ast.NodeVisitor):
 def _validate_tool_class(main_py: Path) -> bool:
     """
     Validate that the tool class has proper Truffle decorators.
-    Verified against deprecated version's validation logic.
     """
     try:
         tree = ast.parse(main_py.read_text())
@@ -74,7 +57,6 @@ def _validate_tool_class(main_py: Path) -> bool:
 def _import_tool(main_py: Path) -> any:
     """
     Import a tool from a main.py file.
-    Verified against deprecated version's import logic.
     
     Args:
         main_py: Path to the main.py file

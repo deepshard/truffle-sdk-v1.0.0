@@ -1,33 +1,13 @@
 """
 Tool Utilities Module
 
-Core utility functions for tool management and validation.
-Implements exact functionality from deprecated SDK version 0.5.3.
+Core utility functions for tool management and validation:
 
-Core Components:
-1. Type System
-   - Type validation
-   - Type conversion
-   - Protocol buffers
-   - Custom types
-
-2. Tool Management
-   - Function inspection
-   - Metadata handling
-   - Argument processing
-   - Error handling
-
-3. Path Operations
-   - Path validation
-   - File operations
-   - Directory handling
-   - Permission checks
-
-4. String Processing
-   - Sanitization
-   - Formatting
-   - Validation
-   - Error messages
+Features:
+- Type validation and conversion
+- Function inspection and metadata
+- Path operations and validation
+- String processing and sanitization
 """
 
 import inspect

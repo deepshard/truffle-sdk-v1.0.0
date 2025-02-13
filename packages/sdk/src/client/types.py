@@ -1,25 +1,11 @@
 """
-Type definitions and utilities for the Truffle SDK client.
+Type Definitions Module
 
-This module provides type definitions, validation, and utility functions
-for working with client-specific types.
-
-Verified Components:
-- Configuration Types ✓
-  - ClientConfig
-  - ModelConfig
-  - ContextConfig
-- Validation Functions ✓
-  - Response validation
-  - Config validation
-  - Type checking
-- Type Conversion ✓
-  - Proto conversion
-  - Role mapping
-  - Data handling
-
-All implementations verified against deprecated SDK version 0.5.3.
-Includes enhancements for better type safety and validation.
+This module provides type definitions and utilities for the SDK client:
+- Configuration dataclasses for client settings
+- Response validation and type checking
+- Protocol buffer type conversion
+- Type-safe data handling utilities
 """
 
 import typing

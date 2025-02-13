@@ -1,13 +1,13 @@
 """
-Type system module providing core types and type utilities.
+Type System Module
 
-Components:
-- Return Types (TruffleReturnType, TruffleFile, TruffleImage)
-- Tool Types (ToolMetadata, ToolRegistry)
-- Application Types (AppMetadata)
-- Type Utilities (validation, conversion)
+Core type system for the Truffle SDK:
 
-All implementations verified against deprecated SDK version 0.5.3.
+Features:
+- Return Types: TruffleReturnType, TruffleFile, TruffleImage
+- Tool Types: ToolMetadata, ToolRegistry
+- Application Types: AppMetadata
+- Type Utilities: Validation and conversion
 """
 
 from .models import (

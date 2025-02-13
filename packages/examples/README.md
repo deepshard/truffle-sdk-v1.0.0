@@ -1,60 +1,50 @@
-# SDK Examples
+# Truffle SDK Examples
 
-Migration Status:
-[INCOMPLETE] Example Apps Migration
-- [ ] Basic examples
-- [ ] Advanced examples
-- [ ] Documentation
+Simple examples demonstrating basic tool creation.
 
-## Core Examples to Migrate
-1. Basic Examples:
-   - [ ] Hello World app
-   - [ ] Simple tool example
-   - [ ] Basic CLI app
-   - [ ] File handling demo
+## Examples
 
-2. Advanced Examples:
-   - [ ] Custom tool implementation
-   - [ ] Complex CLI application
-   - [ ] Service integration
-   - [ ] Full app example
+### Hello World
+Simple "Hello World" tool demonstrating basic tool creation.
+```python
+import truffle
 
-3. Documentation Examples:
-   - [ ] API usage examples
-   - [ ] Tool creation guide
-   - [ ] Best practices demo
-   - [ ] Error handling examples
+@truffle.tool(description="Says hello")
+def hello(name: str) -> str:
+    return f"Hello, {name}!"
+```
 
-## Example Structure
-Each example should include:
-- README.md with setup and usage instructions
-- Complete source code
-- Requirements file
-- Documentation comments
-- Tests (where appropriate)
+### Text Tool
+Basic text processing tool with arguments.
+```python
+import truffle
 
-## Source Components
-Examples should demonstrate:
-1. Core SDK Features:
-   - Tool creation and usage
-   - Client implementation
-   - Service integration
-   - Error handling
+@truffle.tool(description="Process text")
+@truffle.args(
+    text="The text to process",
+    uppercase="Convert to uppercase"
+)
+def process_text(text: str, uppercase: bool = False) -> str:
+    if uppercase:
+        return text.upper()
+    return text
+```
 
-2. CLI Features:
-   - Command implementation
-   - Configuration management
-   - Template usage
-   - Resource handling
+## Running Examples
 
-3. Best Practices:
-   - Code organization
-   - Error handling
-   - Documentation
-   - Testing
+1. Install dependencies:
+```bash
+pip install truffle-sdk
+```
 
-## Dependencies
-- truffle-sdk
-- typing
-- click/typer
-- other example-specific dependencies 
+2. Run an example:
+```bash
+python -m examples.basic.hello_world
+```
+
+## Documentation
+
+For detailed documentation and more examples, visit:
+- [Truffle SDK Documentation](https://docs.truffle.ai)
+- [API Reference](https://docs.truffle.ai/reference)
+- [Examples Repository](https://github.com/truffle-ai/truffle-sdk/examples) 

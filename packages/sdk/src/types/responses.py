@@ -1,74 +1,15 @@
 """
 Response Type Definitions
 
-Verified Components:
-- Response Types ✓
-  - GenerateResponse
-  - GetModelsResponse
-  - SystemToolResponse
-  - SDKResponse
-  - UserResponse
-  - EmbedResponse
+Core response types for the Truffle SDK:
 
-- Processing System ✓
-  - Response parsing
-  - Stream handling
-  - Error processing
-  - Type conversion
-
-All implementations verified against deprecated SDK version 0.5.3.
-
-Migration Status:
-[INCOMPLETE] Response Types Implementation
-- [ ] Core response types
-- [ ] Processing system
-- [ ] Error handling
-
-Core Components to Migrate:
-1. Response Types:
-   - [ ] GenerateResponse
-   - [ ] GetModelsResponse
-   - [ ] SystemToolResponse
-   - [ ] SDKResponse
-   - [ ] UserResponse
-   - [ ] EmbedResponse
-
-2. Response Processing:
-   - [ ] Response parsing
-   - [ ] Type conversion
-   - [ ] Stream handling
-   - [ ] Error processing
-
-3. Type System:
-   - [ ] Response formats
-   - [ ] Data validation
-   - [ ] Type mapping
-   - [ ] Schema handling
-
-4. Error Handling:
-   - [ ] Error types
-   - [ ] Error messages
-   - [ ] Status codes
-   - [ ] Recovery options
-
-Source Components (from client.py):
-1. Response Handling:
-   - Response parsing
-   - Stream processing
-   - Error handling
-   - Type conversion
-
-2. Response Types:
-   - Model responses
-   - Tool responses
-   - User responses
-   - System responses
-
-Dependencies:
-- typing
-- dataclasses
-- platform.sdk_pb2
-- platform.models
+Features:
+- GenerateResponse: Model generation results
+- GetModelsResponse: Available model listing
+- SystemToolResponse: Tool operation results
+- SDKResponse: Generic SDK responses
+- UserResponse: User interaction results
+- EmbedResponse: Text embedding results
 """
 
 from dataclasses import dataclass, field

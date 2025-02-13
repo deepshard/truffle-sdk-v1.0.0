@@ -1,21 +1,11 @@
 """
 CLI Utilities Package
 
-Core utilities for the Truffle CLI.
-Verified against deprecated SDK version 0.5.3.
-
-Verification Status:
-✓ Core Components
-  - Logger integration
-  - Configuration management
-  - Template handling
-  - Validation utilities
-
-✓ Package Structure
-  - Proper imports
-  - Version handling
-  - Error handling
-  - Type safety
+This package provides core utilities for the Truffle CLI:
+- Logging and output formatting
+- Configuration management
+- Template generation and handling
+- Project validation and verification
 """
 
 from pathlib import Path

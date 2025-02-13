@@ -1,78 +1,13 @@
 """
 Tool Registry Module
 
-Core implementation of the Truffle tool registry system.
+Core implementation of the Truffle tool registry system, providing:
 
-Verified Components:
-- Registry Management ✓
-  - Tool registration
-  - Tool discovery
-  - Metadata storage
-  - Validation rules
-
-- Tool Metadata ✓
-  - Name handling
-  - Description management
-  - Icon support
-  - Argument validation
-
-- Tool Discovery ✓
-  - Module scanning
-  - Tool extraction
-  - Metadata collection
-  - Dynamic loading
-
-- Error Handling ✓
-  - Validation errors
-  - Registration errors
-  - Discovery errors
-  - Type checking
-
-All implementations verified against deprecated SDK version 0.5.3.
-
-Core Components to Migrate:
-1. Registry Management:
-   - [ ] Tool registration system
-   - [ ] Tool metadata storage
-   - [ ] Tool validation rules
-   - [ ] Tool discovery mechanism
-
-2. Tool Metadata:
-   - [ ] Name handling
-   - [ ] Description management
-   - [ ] Icon support
-   - [ ] Argument validation
-
-3. Tool Validation:
-   - [ ] Decorator validation
-   - [ ] Argument validation
-   - [ ] Return type checking
-   - [ ] Error handling
-
-4. Tool Discovery:
-   - [ ] Module scanning
-   - [ ] Tool extraction
-   - [ ] Metadata collection
-   - [ ] Dynamic loading
-
-Source Components (from __init__.py):
-1. Tool Registration:
-   - extract_all_top_level_functions()
-   - tool decorator handling
-   - argument processing
-   - type validation
-
-2. Tool Management:
-   - tool metadata storage
-   - tool lookup
-   - tool validation
-   - error handling
-
-Dependencies:
-- typing
-- inspect
-- functools
-- platform.models
+Features:
+- Tool registration and discovery
+- Metadata management
+- Type validation
+- Error handling
 """
 
 import inspect

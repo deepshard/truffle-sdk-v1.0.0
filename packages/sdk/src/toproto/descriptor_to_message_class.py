@@ -1,27 +1,13 @@
 """
 Descriptor to Message Class Converter Module
 
-Converts protocol buffer descriptors to Python message classes.
-Based on deprecated SDK version 0.5.3.
+Converts protocol buffer descriptors to Python message classes:
 
-Core Components:
-1. Class Generation
-   - Message classes
-   - Field definitions
-   - Nested types
-   - Type mapping
-
-2. Field Processing
-   - Field types
-   - Field options
-   - Default values
-   - Validation
-
-3. Type Handling
-   - Basic types
-   - Message types
-   - Enum types
-   - Custom types
+Features:
+- Message class generation
+- Field property creation
+- Type validation and conversion
+- Nested type handling
 """
 
 import typing

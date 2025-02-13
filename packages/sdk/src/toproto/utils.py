@@ -1,27 +1,12 @@
 """
 Protocol Buffer Utilities Module
 
-Core utilities for protocol buffer operations.
-Based on deprecated SDK version 0.5.3.
+Core utilities for protocol buffer operations:
 
-Core Components:
-1. Type Conversion
-   - Python to Proto types
-   - Proto to Python types
-   - Type mapping
-   - Type validation
-
-2. Descriptor Handling
-   - Field descriptors
-   - Message descriptors
-   - Service descriptors
-   - File descriptors
-
-3. Name Processing
-   - Camel case conversion
-   - Snake case conversion
-   - Proto naming rules
-   - Name validation
+Features:
+- Type conversion between Python and Protocol Buffers
+- Descriptor handling for messages, fields, services, and files
+- Name processing and validation for proto identifiers
 """
 
 import re
@@ -58,28 +43,12 @@ PROTO_TO_PYTHON_TYPES = {
 }
 
 def snake_to_camel(name: str) -> str:
-    """
-    Convert snake_case to camelCase.
-    
-    Args:
-        name: Snake case name
-        
-    Returns:
-        Camel case name
-    """
+    """Convert snake_case to camelCase."""
     components = name.split('_')
     return components[0] + ''.join(x.title() for x in components[1:])
 
 def camel_to_snake(name: str) -> str:
-    """
-    Convert camelCase to snake_case.
-    
-    Args:
-        name: Camel case name
-        
-    Returns:
-        Snake case name
-    """
+    """Convert camelCase to snake_case."""
     pattern = re.compile(r'(?<!^)(?=[A-Z])')
     return pattern.sub('_', name).lower()
 
@@ -87,16 +56,11 @@ def validate_proto_name(name: str) -> bool:
     """
     Validate a protocol buffer identifier name.
     
-    Args:
-        name: Name to validate
-        
-    Returns:
-        True if valid, False otherwise
+    Rules:
+    - Must start with letter
+    - Can contain letters, numbers, underscores
+    - Cannot use proto3 reserved words
     """
-    # Proto naming rules:
-    # 1. Must start with letter
-    # 2. Can contain letters, numbers, underscores
-    # 3. Cannot use reserved words
     if not name or not name[0].isalpha():
         return False
         
@@ -113,59 +77,27 @@ def validate_proto_name(name: str) -> bool:
     return name.lower() not in reserved
 
 def get_field_type(python_type: Type) -> int:
-    """
-    Get protocol buffer field type for Python type.
-    
-    Args:
-        python_type: Python type
-        
-    Returns:
-        Protocol buffer field type
-        
-    Raises:
-        ValueError: If type cannot be mapped
-    """
+    """Get protocol buffer field type for Python type."""
     if python_type in PYTHON_TO_PROTO_TYPES:
         return PYTHON_TO_PROTO_TYPES[python_type]
     
-    # Handle message types
     if hasattr(python_type, 'DESCRIPTOR'):
         return FieldDescriptor.TYPE_MESSAGE
         
-    # Handle enum types
     if hasattr(python_type, '_values_'):
         return FieldDescriptor.TYPE_ENUM
         
     raise ValueError(f"Cannot map Python type {python_type} to proto type")
 
 def get_python_type(field_type: int) -> Type:
-    """
-    Get Python type for protocol buffer field type.
-    
-    Args:
-        field_type: Protocol buffer field type
-        
-    Returns:
-        Python type
-        
-    Raises:
-        ValueError: If type cannot be mapped
-    """
+    """Get Python type for protocol buffer field type."""
     if field_type in PROTO_TO_PYTHON_TYPES:
         return PROTO_TO_PYTHON_TYPES[field_type]
         
     raise ValueError(f"Cannot map proto type {field_type} to Python type")
 
 def get_field_default(field_type: int) -> Any:
-    """
-    Get default value for protocol buffer field type.
-    
-    Args:
-        field_type: Protocol buffer field type
-        
-    Returns:
-        Default value
-    """
+    """Get default value for protocol buffer field type."""
     if field_type in {
         FieldDescriptor.TYPE_DOUBLE,
         FieldDescriptor.TYPE_FLOAT,
@@ -191,63 +123,23 @@ def get_field_default(field_type: int) -> Any:
     return None
 
 def is_message_type(python_type: Type) -> bool:
-    """
-    Check if a Python type represents a protocol buffer message.
-    
-    Args:
-        python_type: Python type to check
-        
-    Returns:
-        True if message type, False otherwise
-    """
+    """Check if a Python type represents a protocol buffer message."""
     return hasattr(python_type, 'DESCRIPTOR')
 
 def is_enum_type(python_type: Type) -> bool:
-    """
-    Check if a Python type represents a protocol buffer enum.
-    
-    Args:
-        python_type: Python type to check
-        
-    Returns:
-        True if enum type, False otherwise
-    """
+    """Check if a Python type represents a protocol buffer enum."""
     return hasattr(python_type, '_values_')
 
 def get_message_fields(desc: Descriptor) -> List[FieldDescriptor]:
-    """
-    Get all fields from a message descriptor.
-    
-    Args:
-        desc: Message descriptor
-        
-    Returns:
-        List of field descriptors
-    """
+    """Get all fields from a message descriptor."""
     return list(desc.fields)
 
 def get_nested_messages(desc: Descriptor) -> List[Descriptor]:
-    """
-    Get all nested message types from a message descriptor.
-    
-    Args:
-        desc: Message descriptor
-        
-    Returns:
-        List of nested message descriptors
-    """
+    """Get all nested message types from a message descriptor."""
     return list(desc.nested_types)
 
 def get_nested_enums(desc: Descriptor) -> List[Descriptor]:
-    """
-    Get all nested enum types from a message descriptor.
-    
-    Args:
-        desc: Message descriptor
-        
-    Returns:
-        List of nested enum descriptors
-    """
+    """Get all nested enum types from a message descriptor."""
     return list(desc.enum_types)
 
 def get_package_name(desc: FileDescriptor) -> str:

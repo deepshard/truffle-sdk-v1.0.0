@@ -1,29 +1,13 @@
 """
 Tools Package
 
-Core implementation of the Truffle tool system, providing decorators and registry
-for defining and managing tools.
+Core implementation of the Truffle tool system:
 
-Verified Components:
-- Package Exports ✓
-  - Tool decorator
-  - Args decorator
-  - Registry functions
-  - Utility functions
-
-- Type System ✓
-  - TruffleReturnType
-  - Tool types
-  - Argument types
-  - Validation types
-
-- Tool Registration ✓
-  - Registry initialization
-  - Tool discovery
-  - Metadata handling
-  - Error management
-
-All implementations verified against deprecated SDK version 0.5.3.
+Features:
+- Tool decorators for function wrapping
+- Argument specification and validation
+- Tool registry and discovery
+- Type-safe interfaces
 """
 
 from .decorators import tool, args, ToolConfig

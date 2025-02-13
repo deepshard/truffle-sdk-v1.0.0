@@ -1,36 +1,11 @@
 """
-Client module providing the main interface to the Truffle platform.
+Client Package Module
 
-This module provides a complete, verified implementation of the Truffle SDK client,
-with full backward compatibility and enhanced features.
-
-Verified Components:
-- Core Client ✓
-  - TruffleClient interface
-  - Socket configuration
-  - API methods
-  - Context management
-
-- Type System ✓
-  - Configuration types
-  - Validation utilities
-  - Type conversion
-  - Response handling
-
-- Error Handling ✓
-  - Exception hierarchy
-  - Error context
-  - gRPC integration
-  - Validation errors
-
-- Module Structure ✓
-  - Clean organization
-  - Clear interfaces
-  - Full exports
-  - Documentation
-
-All implementations verified against deprecated SDK version 0.5.3.
-Includes enhancements for type safety, error handling, and configuration management.
+This package provides the main interface to the Truffle platform:
+- Complete SDK client implementation
+- Type-safe configuration and validation
+- Comprehensive error handling
+- Clean and documented interfaces
 """
 
 from .base import TruffleClient, APP_SOCK, SDK_SOCK, SHARED_FILES_DIR

@@ -1,38 +1,11 @@
 """
 gRPC Client Implementation Module
 
-Core implementation of the gRPC client for the Truffle SDK.
-Provides secure, efficient communication with the platform.
-
-Verified Components:
-✓ gRPC Setup
-  - Channel initialization
-  - Stub creation
-  - Connection management
-  - Socket configuration
-
-✓ Method Implementation
-  - perplexity_search()
-  - get_models()
-  - tool_update()
-  - ask_user()
-  - query_embed()
-  - infer()
-  - close()
-
-✓ Stream Processing
-  - Response streaming
-  - Stream error handling
-  - Stream cancellation
-  - Timeout management
-
-✓ Error Handling
-  - gRPC errors
-  - Connection errors
-  - Timeout errors
-  - Protocol errors
-
-All implementations verified against deprecated SDK version 0.5.3.
+This module implements the gRPC client for the Truffle SDK, providing:
+- Secure and efficient platform communication
+- Streaming inference and response handling
+- Error handling and recovery
+- Socket and channel management
 """
 
 import os
