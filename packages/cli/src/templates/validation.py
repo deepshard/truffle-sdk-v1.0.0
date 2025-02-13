@@ -10,7 +10,6 @@ This module provides validation utilities for Truffle project files and structur
 
 import re
 import json
-import typing
 from pathlib import Path
 
 def validate_main_py(main_py_file: Path) -> bool:

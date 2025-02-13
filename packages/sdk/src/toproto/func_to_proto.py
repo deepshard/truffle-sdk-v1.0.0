@@ -12,7 +12,6 @@ Features:
 
 import typing
 import inspect
-import ast
 from dataclasses import dataclass
 from google.protobuf.descriptor import FieldDescriptor
 

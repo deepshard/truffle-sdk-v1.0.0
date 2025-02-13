@@ -5,7 +5,7 @@ Core types and classes for the Truffle SDK:
 
 Features:
 - TruffleReturnType: Base class for all return types
-- TruffleFile: File handling and operations
+- TruffleFile: File handling with validation
 - TruffleImage: Image handling (url, base64, raw)
 - ToolMetadata: Tool registration and metadata
 - ToolRegistry: Tool management and validation
@@ -13,11 +13,12 @@ Features:
 
 import base64
 import os
+import shutil
 import typing
 from dataclasses import dataclass
-import inspect
-import requests
+from pathlib import Path
 from ..platform import sdk_pb2
+from ..client.exceptions import ValidationError
 
 class TruffleReturnType:
     """Base class for all Truffle return types."""
@@ -25,16 +26,51 @@ class TruffleReturnType:
         self.type = type
 
 class TruffleFile(TruffleReturnType):
-    """Represents a file in the Truffle system."""
-    def __init__(self, path: str, name: str):
+    """
+    Represents a file in the Truffle system with enhanced validation.
+    
+    Features:
+    - Path validation and normalization
+    - Secure file operations
+    - Comprehensive error handling
+    - File metadata preservation
+    """
+    
+    def __init__(self, path: typing.Union[str, Path], name: str = None):
+        """
+        Initialize a TruffleFile.
+        
+        Args:
+            path: Path to the file
+            name: Optional custom name (defaults to filename)
+            
+        Raises:
+            ValidationError: If file validation fails
+        """
         super().__init__(sdk_pb2.TruffleType.TRUFFLE_TYPE_FILE)
-        self.path = path
-        self.name = name
+        self.path = Path(path).resolve()
+        self.name = name or self.path.name
+        self._validate()
+
+    def _validate(self) -> None:
+        """
+        Validate file existence and permissions.
+        
+        Raises:
+            ValidationError: If validation fails
+        """
+        if not self.path.exists():
+            raise ValidationError(f"File not found: {self.path}")
+        if not self.path.is_file():
+            raise ValidationError(f"Not a file: {self.path}")
+        if not os.access(self.path, os.R_OK):
+            raise ValidationError(f"File not readable: {self.path}")
 
     def __repr__(self) -> str:
+        """Get string representation."""
         return f"TruffleFile(path='{self.path}', name='{self.name}')"
 
-    def save(self, destination: str) -> str:
+    def save(self, destination: typing.Union[str, Path]) -> str:
         """
         Save the file to the specified destination.
         
@@ -43,12 +79,64 @@ class TruffleFile(TruffleReturnType):
             
         Returns:
             The path where the file was saved
+            
+        Raises:
+            ValidationError: If save operation fails
         """
-        os.makedirs(os.path.dirname(destination), exist_ok=True)
-        if os.path.exists(self.path):
-            with open(self.path, "rb") as src, open(destination, "wb") as dst:
-                dst.write(src.read())
-        return destination
+        try:
+            dest_path = Path(destination).resolve()
+            dest_path.parent.mkdir(parents=True, exist_ok=True)
+            
+            # Copy with metadata preservation
+            shutil.copy2(self.path, dest_path)
+            
+            return str(dest_path)
+            
+        except (OSError, IOError) as e:
+            raise ValidationError(f"Failed to save file: {str(e)}")
+
+    @property
+    def size(self) -> int:
+        """Get file size in bytes."""
+        return self.path.stat().st_size
+
+    @property
+    def extension(self) -> str:
+        """Get file extension."""
+        return self.path.suffix.lower()
+
+    def read_bytes(self) -> bytes:
+        """
+        Read file contents as bytes.
+        
+        Returns:
+            File contents as bytes
+            
+        Raises:
+            ValidationError: If read operation fails
+        """
+        try:
+            return self.path.read_bytes()
+        except (OSError, IOError) as e:
+            raise ValidationError(f"Failed to read file: {str(e)}")
+
+    def read_text(self, encoding: str = 'utf-8') -> str:
+        """
+        Read file contents as text.
+        
+        Args:
+            encoding: Text encoding to use
+            
+        Returns:
+            File contents as string
+            
+        Raises:
+            ValidationError: If read operation fails
+        """
+        try:
+            return self.path.read_text(encoding=encoding)
+        except (OSError, IOError) as e:
+            raise ValidationError(f"Failed to read file: {str(e)}")
 
 class TruffleImage(TruffleReturnType):
     """Represents an image in the Truffle system."""

@@ -14,7 +14,7 @@ import tomli
 import tomli_w
 import uuid
 from pathlib import Path
-from typing import Optional, Dict, Any, List, Union
+from typing import Dict, Any
 
 from .logger import log
 

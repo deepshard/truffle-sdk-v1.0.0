@@ -15,7 +15,6 @@ Features:
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Union
 
-from ..client.grpc import GRPCClient
 from ..tools.utils import validate_tool_args
 
 @dataclass

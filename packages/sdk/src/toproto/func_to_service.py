@@ -13,9 +13,9 @@ Features:
 import typing
 import inspect
 from dataclasses import dataclass
-from google.protobuf.descriptor import ServiceDescriptor, MethodDescriptor
+from google.protobuf.descriptor import ServiceDescriptor
 
-from .converter_base import ConverterBase, ProtoService, ProtoMethod
+from .converter_base import ProtoService, ProtoMethod
 from .func_to_proto import FunctionConverter, FunctionSpec
 from ..client.exceptions import ValidationError
 

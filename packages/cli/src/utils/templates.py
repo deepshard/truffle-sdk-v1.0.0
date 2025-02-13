@@ -8,12 +8,10 @@ This module provides template generation utilities for Truffle projects:
 - Provides default project templates and resources
 """
 
-import json
 import shutil
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 
-from .logger import log
 from .config import get_sdk_version
 
 def generate_main_py(project_name: str, manifest: Dict[str, Any]) -> str:

@@ -26,6 +26,16 @@ class ToolConfig:
     icon: typing.Optional[str] = None
     args: typing.Dict[str, str] = None
 
+    def to_metadata(self) -> 'ToolMetadata':
+        """Convert config to ToolMetadata."""
+        from ..types.models import ToolMetadata
+        return ToolMetadata(
+            name=self.name,
+            description=self.description,
+            icon=self.icon,
+            args=self.args or {}
+        )
+
 def tool(
     name: str = None,
     description: str = None,
@@ -38,6 +48,12 @@ def tool(
         name: Optional name for the tool (defaults to function name)
         description: Optional description of what the tool does
         icon: Optional icon URL or emoji for the tool
+        
+    Returns:
+        Decorated function
+        
+    Raises:
+        ValidationError: If function signature is invalid
     """
     def decorator(func: typing.Callable) -> typing.Callable:
         # Get function signature and docstring
@@ -81,6 +97,12 @@ def args(**arg_descriptions: str) -> typing.Callable:
     
     Args:
         **arg_descriptions: Mapping of argument names to their descriptions
+        
+    Returns:
+        Decorated function
+        
+    Raises:
+        ValidationError: If function is not a tool or arguments are invalid
     """
     def decorator(func: typing.Callable) -> typing.Callable:
         # Validate function is a tool

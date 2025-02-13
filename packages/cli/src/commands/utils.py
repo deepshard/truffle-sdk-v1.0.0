@@ -9,14 +9,13 @@ This module provides common utilities for CLI commands, including:
 """
 
 import ast
-import json
 import re
 import tomli
 import tomli_w
 from pathlib import Path
-from typing import Optional, Dict, Any, List
+from typing import Optional
 
-from utils.logger import log, Symbols
+from utils.logger import log
 
 def update_pyproject(
     pyproject_path: Path,

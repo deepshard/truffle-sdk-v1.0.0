@@ -1,58 +1,55 @@
 """
-gRPC Client Implementation Module
+gRPC Client Implementation
 
-This module implements the gRPC client for the Truffle SDK, providing:
-- Secure and efficient platform communication
-- Streaming inference and response handling
-- Error handling and recovery
-- Socket and channel management
+Core implementation of the gRPC client for the Truffle platform:
+- Secure connection management
+- Request/response handling
+- Error handling and retries
+- Type-safe interfaces
 """
 
-import os
-import json
 import typing
 import grpc
-from pathlib import Path
+from typing import Iterator, List, Optional, Dict, Union, Tuple
 
 from ..platform import sdk_pb2, sdk_pb2_grpc
-from .base import TruffleClient
+from .base import TruffleClient, SDK_SOCK
+from .types import (
+    ClientConfig,
+    ModelConfig,
+    ContextConfig,
+    RuntimeValidator,
+    ResponseValidator,
+)
 from .exceptions import (
     ConnectionError,
-    RPCError,
     ValidationError,
     ModelError,
     GenerationError,
-    ContextError,
-    ToolError,
-    ResponseError,
-    ConfigurationError
 )
 
-# Socket configuration
-APP_SOCK = os.getenv("TRUFFLE_APP_SOCKET", "unix:///tmp/truffle_app.sock")
-SDK_SOCK = os.getenv("TRUFFLE_SDK_SOCKET", "unix:///tmp/truffle_sdk.sock")
-SHARED_FILES_DIR = os.getenv("TRUFFLE_SHARED_DIR", "/root/shared")
 
 class GRPCClient(TruffleClient):
-    """gRPC implementation of the Truffle client interface."""
+    """gRPC implementation of the Truffle client."""
     
     def __init__(self, host: str = SDK_SOCK):
         """
         Initialize the gRPC client.
         
         Args:
-            host: The socket address to connect to
+            host: gRPC server address
             
         Raises:
             ConnectionError: If connection fails
+            ValidationError: If client validation fails
         """
-        try:
-            self.channel = grpc.insecure_channel(host)
-            self.stub = sdk_pb2_grpc.TruffleSDKStub(self.channel)
-            self.model_contexts: typing.List[sdk_pb2.Context] = []
-        except grpc.RpcError as e:
-            raise ConnectionError("Failed to initialize gRPC client", e.details())
-    
+        self.config = ClientConfig(host=host)
+        self.channel = grpc.insecure_channel(host)
+        self.stub = sdk_pb2_grpc.TruffleStub(self.channel)
+        
+        # Validate client on initialization
+        RuntimeValidator.validate_client(self)
+
     def perplexity_search(
         self,
         query: str,
@@ -61,258 +58,227 @@ class GRPCClient(TruffleClient):
         system_prompt: str = "",
     ) -> str:
         """
-        Perform a search using the Perplexity API.
+        Perform a perplexity search.
         
         Args:
-            query: The search query
-            model: The model to use (sonar, sonar-pro, sonar-reasoning)
-            response_fmt: Optional response format specification
-            system_prompt: Optional system prompt for context
+            query: Search query
+            model: Model to use
+            response_fmt: Optional response format
+            system_prompt: Optional system prompt
             
         Returns:
-            The search response text
+            Search response
             
         Raises:
-            ValidationError: If model is invalid
-            ToolError: If search fails
-            RPCError: If RPC call fails
+            ValidationError: If parameters are invalid
+            ConnectionError: If request fails
         """
-        perplexity_models_feb24 = [
-            "sonar-reasoning",  # Chat Completion - 127k context length
-            "sonar-pro",        # Chat Completion - 200k 
-            "sonar",            # Chat Completion - 127k 
-        ]
-        if model not in perplexity_models_feb24:
-            raise ValidationError(
-                f"Model '{model}' not found in available models [{perplexity_models_feb24}]. "
-                "See https://docs.perplexity.ai/guides/model-cards"
-            )
-
-        PERPLEXITY_API_URL = "https://api.perplexity.ai/chat/completions"
-        payload = {
-            "model": model,
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": query},
-            ],
-        }
-        if response_fmt is not None:
-            payload["response_format"] = response_fmt
-
         try:
-            request = sdk_pb2.SystemToolRequest(tool_name="perplexity_search")
-            request.args["url"] = PERPLEXITY_API_URL
-            request.args["payload"] = json.dumps(payload)
-
-            response: sdk_pb2.SystemToolResponse = self.stub.SystemTool(request)
+            request = sdk_pb2.PerplexityRequest(
+                query=query,
+                model=model,
+                system_prompt=system_prompt,
+            )
+            if response_fmt:
+                request.response_format.update(response_fmt)
+                
+            response = self.stub.PerplexitySearch(request)
+            
             if response.error:
-                raise ToolError("perplexity_search", response.error)
-
-            results = json.loads(response.response)
-            return results["choices"][0]["message"]["content"]
+                raise ValidationError(response.error)
+                
+            return response.response
+            
         except grpc.RpcError as e:
-            raise RPCError.from_grpc_error("perplexity_search", e)
-        except json.JSONDecodeError as e:
-            raise ResponseError(f"Failed to parse search response: {e}")
-    
-    def get_models(self) -> typing.List[sdk_pb2.ModelDescription]:
+            raise ConnectionError("Perplexity search failed", str(e))
+
+    def get_models(self) -> List[sdk_pb2.ModelDescription]:
         """
-        Get available platform models.
+        Get available models.
         
         Returns:
             List of model descriptions
             
         Raises:
-            RPCError: If RPC call fails
+            ConnectionError: If request fails
         """
         try:
             response = self.stub.GetModels(sdk_pb2.GetModelsRequest())
-            return response.models
+            
+            # Validate each model
+            models = []
+            for model in response.models:
+                if ResponseValidator.validate_model_response(model):
+                    models.append(model)
+                    
+            return models
+            
         except grpc.RpcError as e:
-            raise RPCError.from_grpc_error("get_models", e)
-    
+            raise ConnectionError("Failed to get models", str(e))
+
     def tool_update(self, message: str) -> None:
         """
-        Update tool status.
+        Send a tool update.
         
         Args:
-            message: Status message
+            message: Update message
             
         Raises:
-            RPCError: If RPC call fails
-            ToolError: If update fails
+            ConnectionError: If update fails
         """
         try:
-            response: sdk_pb2.SDKResponse = self.stub.ToolUpdate(
-                sdk_pb2.ToolUpdateRequest(friendly_description=message)
-            )
-            if response.error:
-                raise ToolError("tool_update", response.error)
+            self.stub.ToolUpdate(sdk_pb2.ToolUpdateRequest(message=message))
         except grpc.RpcError as e:
-            raise RPCError.from_grpc_error("tool_update", e)
-    
+            raise ConnectionError("Tool update failed", str(e))
+
     def ask_user(
         self, 
         message: str, 
         reason: str = "Tool needs input to continue."
-    ) -> typing.Dict[str, typing.Union[str, typing.List[str]]]:
+    ) -> Dict[str, Union[str, List[str]]]:
         """
-        Request user input.
+        Request input from the user.
         
         Args:
-            message: Message to display
-            reason: Reason for input request
+            message: Question to ask
+            reason: Reason for asking
             
         Returns:
-            Dict with response, optional error, and optional files
+            User response
             
         Raises:
-            RPCError: If RPC call fails
+            ConnectionError: If request fails
         """
         try:
-            response: sdk_pb2.UserResponse = self.stub.AskUser(
-                sdk_pb2.UserRequest(message=message, reason=reason)
+            request = sdk_pb2.UserRequest(
+                message=message,
+                reason=reason
             )
-            ret = {"response": response.response}
-            if response.HasField("error"):
-                ret["error"] = response.error
-            if response.HasField("attached_files") and len(response.attached_files):
-                ret["files"] = list(response.attached_files)
-            return ret
+            response = self.stub.AskUser(request)
+            
+            if response.error:
+                raise ValidationError(response.error)
+                
+            return {
+                "response": response.response,
+                "options": list(response.options)
+            }
+            
         except grpc.RpcError as e:
-            raise RPCError.from_grpc_error("ask_user", e)
-    
+            raise ConnectionError("User request failed", str(e))
+
     def query_embed(
         self, 
         query: str, 
-        documents: typing.List[str]
-    ) -> typing.List[typing.Tuple[str, float]]:
+        documents: List[str]
+    ) -> List[Tuple[str, float]]:
         """
-        Perform semantic search.
+        Perform embedding query.
         
         Args:
-            query: Search query
+            query: Query string
             documents: Documents to search
             
         Returns:
             List of (document, score) tuples
             
         Raises:
-            RPCError: If RPC call fails
-            ValidationError: If no results
+            ConnectionError: If request fails
+            ValidationError: If response is invalid
         """
         try:
-            request = sdk_pb2.EmbedRequest(query=query, documents=documents)
-            response: sdk_pb2.EmbedResponse = self.stub.Embed(request)
+            request = sdk_pb2.EmbedRequest(
+                query=query,
+                documents=documents
+            )
+            response = self.stub.QueryEmbed(request)
             
-            if len(response.results) == 0:
-                raise ValidationError("No embedding results returned")
+            if not ResponseValidator.validate_embed_response(response):
+                raise ValidationError("Invalid embedding response")
                 
             return [(r.text, r.score) for r in response.results]
+            
         except grpc.RpcError as e:
-            raise RPCError.from_grpc_error("query_embed", e)
-    
+            raise ConnectionError("Embedding query failed", str(e))
+
     def infer(
         self,
         prompt: str,
         model_id: int = 0,
-        system_prompt: typing.Optional[str] = None,
-        context_idx: typing.Optional[int] = None,
+        system_prompt: Optional[str] = None,
+        context_idx: Optional[int] = None,
         max_tokens: int = 1000,
         temperature: float = 0.7,
-        format_type: typing.Optional[str] = None,
-        schema: typing.Optional[str] = None,
-    ) -> typing.Iterator[str]:
+        format_type: Optional[str] = None,
+        schema: Optional[str] = None,
+    ) -> Iterator[str]:
         """
-        Make streaming inference request.
+        Perform model inference.
         
         Args:
             prompt: Input prompt
-            model_id: Model ID
+            model_id: Model ID to use
             system_prompt: Optional system prompt
             context_idx: Optional context index
-            max_tokens: Max tokens to generate
+            max_tokens: Maximum tokens to generate
             temperature: Sampling temperature
-            format_type: Optional response format
-            schema: Optional schema
+            format_type: Optional output format
+            schema: Optional output schema
             
-        Returns:
-            Token iterator
+        Yields:
+            Generated tokens
             
         Raises:
-            RPCError: If RPC call fails
-            ValidationError: If parameters invalid
+            ConnectionError: If request fails
+            ValidationError: If parameters are invalid
+            ModelError: If model errors occur
             GenerationError: If generation fails
-            ContextError: If context invalid
         """
-        # Validate parameters
-        if temperature < 0.0 or temperature > 1.0:
-            raise ValidationError("Temperature must be between 0.0 and 1.0")
-            
-        if max_tokens < 1:
-            raise ValidationError("max_tokens must be positive")
-            
-        if context_idx is not None and (
-            context_idx < 0 or context_idx >= len(self.model_contexts)
-        ):
-            raise ContextError("Invalid context index")
-            
-        # Setup format spec
-        format_spec = None
-        if format_type:
-            try:
-                format_spec = sdk_pb2.GenerateResponseFormat(
-                    format=sdk_pb2.GenerateResponseFormat.ResponseFormat.Value(
-                        f"RESPONSE_{format_type}"
-                    ),
-                    schema=schema,
-                )
-            except ValueError:
-                raise ValidationError(f"Invalid format type: {format_type}")
-        
-        # Create request
-        request = sdk_pb2.GenerateRequest(
-            prompt=prompt,
+        # Validate configurations
+        model_config = ModelConfig(
             model_id=model_id,
             max_tokens=max_tokens,
-            temperature=temperature
+            temperature=temperature,
+            format_type=format_type,
+            schema=schema
         )
+        validate_model_config(model_config)
         
-        if system_prompt:
-            request.system_prompt = system_prompt
-            
-        if context_idx is not None:
-            request.context.CopyFrom(self.model_contexts[context_idx])
-            
-        if format_spec:
-            request.format.CopyFrom(format_spec)
+        context_config = ContextConfig(
+            system_prompt=system_prompt,
+            context_idx=context_idx
+        )
+        validate_context_config(context_config)
         
-        # Make streaming request
         try:
+            request = sdk_pb2.GenerateRequest(
+                prompt=prompt,
+                model_id=model_id,
+                system_prompt=system_prompt or "",
+                context_idx=context_idx or 0,
+                max_tokens=max_tokens,
+                temperature=temperature
+            )
+            
+            if format_type:
+                request.format_type = format_type
+            if schema:
+                request.schema = schema
+                
             for response in self.stub.Generate(request):
-                if response.HasField("error"):
-                    raise GenerationError(
-                        response.error,
-                        response.finish_reason if response.HasField("finish_reason") else None
-                    )
+                if response.error:
+                    raise GenerationError(response.error)
                     
-                if response.HasField("context"):
-                    self.model_contexts.append(response.context)
+                if not ResponseValidator.validate_generation_response(response):
+                    raise ValidationError("Invalid generation response")
                     
-                if response.HasField("text"):
-                    yield response.text
+                if response.token:
+                    yield response.token
                     
         except grpc.RpcError as e:
-            raise RPCError.from_grpc_error("infer", e)
-    
+            raise ConnectionError("Generation failed", str(e))
+
     def close(self) -> None:
-        """
-        Close the gRPC channel.
-        
-        Raises:
-            RPCError: If close fails
-        """
-        try:
+        """Close the client connection."""
+        if self.channel:
             self.channel.close()
-        except grpc.RpcError as e:
-            raise RPCError.from_grpc_error("close", e)

@@ -8,9 +8,6 @@ This package provides core utilities for the Truffle CLI:
 - Project validation and verification
 """
 
-from pathlib import Path
-from typing import Dict, Any
-
 from .logger import log, Symbols, Colors
 from .config import (
     load_manifest,

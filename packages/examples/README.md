@@ -29,22 +29,3 @@ def process_text(text: str, uppercase: bool = False) -> str:
         return text.upper()
     return text
 ```
-
-## Running Examples
-
-1. Install dependencies:
-```bash
-pip install truffle-sdk
-```
-
-2. Run an example:
-```bash
-python -m examples.basic.hello_world
-```
-
-## Documentation
-
-For detailed documentation and more examples, visit:
-- [Truffle SDK Documentation](https://docs.truffle.ai)
-- [API Reference](https://docs.truffle.ai/reference)
-- [Examples Repository](https://github.com/truffle-ai/truffle-sdk/examples) 

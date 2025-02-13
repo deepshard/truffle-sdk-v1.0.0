@@ -10,12 +10,10 @@ Features:
 """
 
 import re
-from typing import Any, Dict, List, Optional, Set, Tuple, Type, Union
+from typing import Any, List, Type
 from google.protobuf.descriptor import (
     Descriptor,
-    FieldDescriptor,
-    FileDescriptor,
-    ServiceDescriptor
+    FieldDescriptor
 )
 
 # Type mapping from Python to Proto

@@ -12,26 +12,12 @@ Features:
 
 import typing
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Type, get_type_hints
-
+from typing import Any, Type
 from google.protobuf.descriptor import (
     Descriptor,
-    EnumDescriptor,
-    FieldDescriptor,
-    FileDescriptor
+    FieldDescriptor
 )
 from google.protobuf.message import Message
-
-from .utils import (
-    get_field_type,
-    get_python_type,
-    get_field_default,
-    is_message_type,
-    is_enum_type,
-    get_message_fields,
-    get_nested_messages,
-    get_nested_enums
-)
 
 @dataclass
 class FieldInfo:
@@ -41,16 +27,17 @@ class FieldInfo:
     type: Type
     label: int = FieldDescriptor.LABEL_OPTIONAL
     default: Any = None
-    message_type: Optional[Type[Message]] = None
-    enum_type: Optional[Type] = None
-    options: Dict[str, Any] = field(default_factory=dict)
+    message_type: typing.Optional[Type[Message]] = None
+    enum_type: typing.Optional[Type] = None
+    options: typing.Dict[str, Any] = field(default_factory=dict)
 
 class DescriptorToMessageClass:
     """Converts protocol buffer descriptors to Python message classes."""
     
     def __init__(self):
-        self.type_registry: Dict[str, Type] = {}
-        self.enum_registry: Dict[str, Type] = {}
+        """Initialize the converter."""
+        self.type_registry: typing.Dict[str, Type] = {}
+        self.enum_registry: typing.Dict[str, Type] = {}
         
     def convert(self, desc: Descriptor) -> Type[Message]:
         """
@@ -76,23 +63,36 @@ class DescriptorToMessageClass:
         return self._create_message_class(desc)
         
     def _process_nested_types(self, desc: Descriptor) -> None:
-        """Process nested message and enum types."""
+        """
+        Process nested message and enum types.
+        
+        Args:
+            desc: Message descriptor to process
+        """
         # Process nested messages
-        for nested in get_nested_messages(desc):
+        for nested in desc.nested_types:
             message_class = self._create_message_class(nested)
             self.type_registry[nested.full_name] = message_class
             
         # Process nested enums
-        for enum in get_nested_enums(desc):
+        for enum in desc.enum_types:
             enum_class = self._create_enum_class(enum)
             self.enum_registry[enum.full_name] = enum_class
             
     def _create_message_class(self, desc: Descriptor) -> Type[Message]:
-        """Create a message class from a descriptor."""
-        fields: Dict[str, FieldInfo] = {}
+        """
+        Create a message class from a descriptor.
+        
+        Args:
+            desc: Message descriptor
+            
+        Returns:
+            Generated message class
+        """
+        fields: typing.Dict[str, FieldInfo] = {}
         
         # Process fields
-        for field_desc in get_message_fields(desc):
+        for field_desc in desc.fields:
             field_info = self._create_field_info(field_desc)
             fields[field_info.name] = field_info
             
@@ -111,8 +111,16 @@ class DescriptorToMessageClass:
         # Create class
         return type(desc.name, (Message,), attrs)
         
-    def _create_enum_class(self, desc: EnumDescriptor) -> Type:
-        """Create an enum class from a descriptor."""
+    def _create_enum_class(self, desc: Descriptor) -> Type:
+        """
+        Create an enum class from a descriptor.
+        
+        Args:
+            desc: Enum descriptor
+            
+        Returns:
+            Generated enum class
+        """
         values = {
             value.name: value.number
             for value in desc.values
@@ -131,7 +139,15 @@ class DescriptorToMessageClass:
         return type(desc.name, (), attrs)
         
     def _create_field_info(self, desc: FieldDescriptor) -> FieldInfo:
-        """Create field info from a field descriptor."""
+        """
+        Create field info from a field descriptor.
+        
+        Args:
+            desc: Field descriptor
+            
+        Returns:
+            Field info instance
+        """
         # Get Python type
         if desc.type == FieldDescriptor.TYPE_MESSAGE:
             python_type = self.type_registry.get(
@@ -144,7 +160,7 @@ class DescriptorToMessageClass:
                 int
             )
         else:
-            python_type = get_python_type(desc.type)
+            python_type = self._get_python_type(desc.type)
             
         # Create field info
         return FieldInfo(
@@ -152,7 +168,7 @@ class DescriptorToMessageClass:
             number=desc.number,
             type=python_type,
             label=desc.label,
-            default=get_field_default(desc.type),
+            default=self._get_field_default(desc.type),
             message_type=(
                 desc.message_type if desc.type == FieldDescriptor.TYPE_MESSAGE
                 else None
@@ -161,7 +177,7 @@ class DescriptorToMessageClass:
                 desc.enum_type if desc.type == FieldDescriptor.TYPE_ENUM
                 else None
             ),
-            options=dict(desc.options.Items()) if desc.options else {}
+            options=dict(desc.options.ListFields()) if desc.options else {}
         )
         
     def _create_field_property(
@@ -169,8 +185,16 @@ class DescriptorToMessageClass:
         name: str,
         info: FieldInfo
     ) -> property:
-        """Create a property for a field."""
+        """
+        Create a property for a field.
         
+        Args:
+            name: Field name
+            info: Field info
+            
+        Returns:
+            Property descriptor
+        """
         def getter(msg):
             if not hasattr(msg, f'_{name}'):
                 setattr(msg, f'_{name}', info.default)
@@ -194,7 +218,20 @@ class DescriptorToMessageClass:
         return property(getter, setter, deleter)
         
     def _validate_value(self, value: Any, info: FieldInfo) -> Any:
-        """Validate and convert a field value."""
+        """
+        Validate and convert a field value.
+        
+        Args:
+            value: Value to validate
+            info: Field info
+            
+        Returns:
+            Validated value
+            
+        Raises:
+            TypeError: If value has invalid type
+            ValueError: If value is invalid
+        """
         if value is None:
             if info.label == FieldDescriptor.LABEL_REQUIRED:
                 raise ValueError(f"Field {info.name} is required")
@@ -236,4 +273,68 @@ class DescriptorToMessageClass:
             raise TypeError(
                 f"Cannot convert value '{value}' to {info.type.__name__} "
                 f"for field {info.name}: {e}"
-            ) 
+            )
+            
+    def _get_python_type(self, field_type: int) -> Type:
+        """
+        Get Python type for protocol buffer field type.
+        
+        Args:
+            field_type: Field type enum value
+            
+        Returns:
+            Python type
+            
+        Raises:
+            ValueError: If field type is invalid
+        """
+        type_map = {
+            FieldDescriptor.TYPE_DOUBLE: float,
+            FieldDescriptor.TYPE_FLOAT: float,
+            FieldDescriptor.TYPE_INT64: int,
+            FieldDescriptor.TYPE_UINT64: int,
+            FieldDescriptor.TYPE_INT32: int,
+            FieldDescriptor.TYPE_UINT32: int,
+            FieldDescriptor.TYPE_BOOL: bool,
+            FieldDescriptor.TYPE_STRING: str,
+            FieldDescriptor.TYPE_BYTES: bytes,
+            FieldDescriptor.TYPE_MESSAGE: Message,
+            FieldDescriptor.TYPE_ENUM: int,
+        }
+        if field_type not in type_map:
+            raise ValueError(f"Unsupported field type: {field_type}")
+        return type_map[field_type]
+        
+    def _get_field_default(self, field_type: int) -> Any:
+        """
+        Get default value for protocol buffer field type.
+        
+        Args:
+            field_type: Field type enum value
+            
+        Returns:
+            Default value
+        """
+        if field_type in {
+            FieldDescriptor.TYPE_DOUBLE,
+            FieldDescriptor.TYPE_FLOAT,
+            FieldDescriptor.TYPE_INT64,
+            FieldDescriptor.TYPE_UINT64,
+            FieldDescriptor.TYPE_INT32,
+            FieldDescriptor.TYPE_UINT32,
+        }:
+            return 0
+            
+        if field_type == FieldDescriptor.TYPE_BOOL:
+            return False
+            
+        if field_type == FieldDescriptor.TYPE_STRING:
+            return ""
+            
+        if field_type == FieldDescriptor.TYPE_BYTES:
+            return b""
+            
+        if field_type == FieldDescriptor.TYPE_ENUM:
+            return 0
+            
+        return None 
