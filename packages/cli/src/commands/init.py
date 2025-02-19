@@ -70,7 +70,7 @@ def init(
 ) -> None:
     """Initialize a new Truffle project."""
     with log.group("Initializing new Truffle project", emoji=Symbols.PACKAGE):
-        log.info("Creating new Truffle project", version="0.6.5")
+        log.info("Creating new Truffle project", version="1.0.0")
         
         # Validate and format project name
         if project_name == ".":
@@ -123,7 +123,7 @@ def init(
                 json.dumps(manifest_data, indent=4, sort_keys=True, ensure_ascii=False)
             )
             (proj_path / "requirements.txt").write_text(
-                generate_requirements("0.6.5")
+                generate_requirements("1.0.0")
             )
             
             # Copy icon

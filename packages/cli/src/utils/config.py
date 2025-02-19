@@ -19,7 +19,7 @@ from typing import Dict, Any
 from .logger import log
 
 # Constants
-DEFAULT_VERSION = "0.6.5"
+DEFAULT_VERSION = "1.0.0"
 MANIFEST_VERSION = 1
 
 def get_sdk_version() -> str:
