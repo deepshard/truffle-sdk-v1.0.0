@@ -18,7 +18,7 @@ import requests
 from typing import Optional, List
 
 from utils.logger import log, Symbols
-from templates.generator import (
+from utils.templates import (
     generate_main_py,
     generate_manifest,
     generate_requirements
