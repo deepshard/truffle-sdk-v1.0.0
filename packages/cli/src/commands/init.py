@@ -4,7 +4,7 @@ Project Initialization Command
 This module handles the creation of new Truffle projects. It provides functionality to:
 - Create new project directories with proper structure
 - Generate necessary project files (main.py, manifest.json, requirements.txt)
-- Collect and store project metadata and example prompts
+- Collect and store project metadata and AI-generated example prompts
 - Set up initial project configuration and dependencies
 """
 
@@ -13,6 +13,8 @@ from pathlib import Path
 import json
 import shutil
 import uuid
+import os
+import requests
 from typing import Optional, List
 
 from utils.logger import log, Symbols
@@ -22,17 +24,47 @@ from templates.generator import (
     generate_requirements
 )
 
+def _generate_example_prompts(tool_name: str, description: str) -> List[str]:
+    """Generate example prompts using a simple OpenAI API call."""
+    api_key = os.getenv('OPENAI_API_KEY')
+    if not api_key:
+        log.warning("Sample prompt generation failed - please enter 5 sample prompts inside $manifest.json file")
+        return []
+
+    try:
+        response = requests.post(
+            "https://api.openai.com/v1/chat/completions",
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {api_key}"
+            },
+            json={
+                "model": "gpt-3.5-turbo",
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "Reflect on realistic use cases for this tool and generate 5 natural example prompts. Return only the prompts, one per line."
+                    },
+                    {
+                        "role": "user",
+                        "content": f"Tool Name: {tool_name}\nDescription: {description}\n\nGenerate 5 example prompts that show how users would naturally interact with this tool."
+                    }
+                ],
+                "temperature": 0.7
+            }
+        )
+        response.raise_for_status()
+        return response.json()['choices'][0]['message']['content'].strip().split('\n')[:5]
+    except Exception as e:
+        log.warning("Sample prompt generation failed - please enter 5 sample prompts inside $manifest.json file")
+        return []
+
 def init(
     project_name: str = typer.Argument(..., help="Name of the project to create"),
     description: Optional[str] = typer.Option(
         None,
         "--description", "-d",
         help="Description of the project"
-    ),
-    num_examples: int = typer.Option(
-        5,
-        "--examples", "-e",
-        help="Number of example prompts to collect"
     )
 ) -> None:
     """Initialize a new Truffle project."""
@@ -62,13 +94,9 @@ def init(
         if not description:
             description = typer.prompt("Description")
         
-        # Collect example prompts
-        with log.group("Input sample prompts", emoji=Symbols.PENCIL):
-            example_prompts = []
-            for i in range(num_examples):
-                prompt = typer.prompt(f"Enter example prompt {i + 1}/{num_examples}")
-                example_prompts.append(prompt)
-                log.detail(f"{i + 1}. \"{prompt}\"")
+        # Generate example prompts
+        log.info("Generating sample prompts", emoji=Symbols.SPARKLES)
+        example_prompts = _generate_example_prompts(project_name, description)
 
         # Generate manifest
         manifest_data = {

@@ -27,17 +27,16 @@ def generate_main_py(proj_name: str, manifest: typing.Dict[str, typing.Any]) -> 
     return f"""
 import truffle
 
-class {proj_name}:
+class {proj_name}Tool:
     def __init__(self):
         self.client = truffle.TruffleClient()
     
-    # All tool calls must start with a capital letter! 
     @truffle.tool(
         description="Replace this with a description of the tool.",
         icon="brain"
     )
     @truffle.args(user_input="A description of the argument")
-    def {proj_name}Tool(self, user_input: str) -> str:
+    def Execute(self, user_input: str) -> str:
         \"\"\"
         Replace this text with a basic description of what this function does.
         \"\"\"
@@ -45,7 +44,7 @@ class {proj_name}:
         pass
 
 if __name__ == "__main__":
-    app = truffle.TruffleApp({proj_name}())
+    app = truffle.TruffleApp({proj_name}Tool())
     app.launch()
 """
 

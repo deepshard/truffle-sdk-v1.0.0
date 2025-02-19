@@ -214,5 +214,25 @@ class Logger:
             msg = f"{msg} {context}"
         return self.detail(f"{Symbols.METRIC} {msg}")
 
+    def group(self, message: str, emoji: Optional[str] = None) -> 'Logger':
+        """Create a new log group with increased indentation."""
+        self._format(Colors.MAIN, f"{emoji + ' ' if emoji else ''}{message}")
+        self._indent_level += 1
+        return self
+
+    def end_group(self) -> 'Logger':
+        """End the current log group and decrease indentation."""
+        if self._indent_level > 0:
+            self._indent_level -= 1
+        return self
+
+    def __enter__(self) -> 'Logger':
+        """Context manager entry - no-op since indentation is handled by group()."""
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        """Context manager exit - decrease indentation level."""
+        self.end_group()
+
 # Global logger instance
 log = Logger() 

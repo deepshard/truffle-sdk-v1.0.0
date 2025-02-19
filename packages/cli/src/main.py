@@ -5,8 +5,8 @@ Main entry point for the Truffle CLI application.
 Provides command-line interface for creating, building, and managing Truffle apps.
 """
 
-from utils.logger import log
-from commands import get_app
+from .utils.logger import log
+from .commands import get_app
 
 def main() -> None:
     """Main entry point for the CLI."""

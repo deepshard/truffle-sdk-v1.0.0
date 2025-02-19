@@ -44,7 +44,7 @@ class GRPCClient(TruffleClient):
             ValidationError: If client validation fails
         """
         self.config = ClientConfig(host=host)
-            self.channel = grpc.insecure_channel(host)
+        self.channel = grpc.insecure_channel(host)
         self.stub = sdk_pb2_grpc.TruffleStub(self.channel)
         
         # Validate client on initialization
