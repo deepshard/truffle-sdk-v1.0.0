@@ -17,8 +17,9 @@ import os
 import requests
 from typing import Optional, List
 
-from utils.logger import log, Symbols
-from utils.templates import (
+from ..utils.logger import log, Symbols
+from ..utils.templates import (
+    
     generate_main_py,
     generate_manifest,
     generate_requirements
@@ -99,14 +100,12 @@ def init(
         example_prompts = _generate_example_prompts(project_name, description)
 
         # Generate manifest
-        manifest_data = {
-            "name": project_name.lower(),
-            "description": description,
-            "example_prompts": example_prompts,
-            "packages": [],
-            "manifest_version": 1,
-            "app_bundle_id": str(uuid.uuid4())
-        }
+        manifest_data = generate_manifest(
+            name=project_name,
+            description=description,
+            example_prompts=example_prompts
+        )
+        manifest_data["app_bundle_id"] = str(uuid.uuid4())
         
         # Create project structure
         with log.group("Creating project structure", emoji=Symbols.SPARKLES):
@@ -128,7 +127,7 @@ def init(
             )
             
             # Copy icon
-            icon_src = Path(__file__).parent.parent / "cli_assets" / "default_app.png"
+            icon_src = Path(__file__).parent.parent / "assets" / "default_app.png"
             shutil.copy(icon_src, proj_path / "icon.png")
             
             # Success message

@@ -134,5 +134,5 @@ def copy_default_icon(target_path: Path) -> None:
     Args:
         target_path: Path to copy icon to
     """
-    icon_src = Path(__file__).parent.parent / "cli_assets" / "default_app.png"
+    icon_src = Path(__file__).parent.parent / "assets" / "default_app.png"
     shutil.copy(icon_src, target_path / "icon.png")
