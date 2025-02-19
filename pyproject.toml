@@ -3,7 +3,7 @@ name = "truffle-sdk"
 version = "0.6.4"
 description = "Truffle SDK for building AI-powered tools"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.9"
 license = "MIT"
 authors = [
     {name = "Truffle Team", email = "team@truffle.ai"}
@@ -23,7 +23,7 @@ dependencies = [
 ]
 
 [project.scripts]
-truffle = "truffle.cli:main"
+truffle = "packages.cli.src.main:main"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
@@ -39,7 +39,7 @@ markers = [
 
 [tool.black]
 line-length = 88
-target-version = ['py310']
+target-version = ['py39']
 include = '\.pyi?$'
 
 [tool.isort]
@@ -49,3 +49,16 @@ multi_line_output = 3
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatch.build]
+packages = ["packages"]
+only-packages = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["packages"]
+
+[tool.hatch.build.targets.wheel.sources]
+"packages" = "packages"
+
+[tool.hatch.build.targets.sdist]
+packages = ["packages"]

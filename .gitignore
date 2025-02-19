@@ -1,3 +1,8 @@
+# Environment variables
+.env
+.env.*
+!.env.example
+
 # Python
 __pycache__/
 *.py[cod]
@@ -21,18 +26,9 @@ wheels/
 *.egg
 
 # Virtual Environment
-.env
 .venv
-env/
 venv/
 ENV/
-
-# Node
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
 
 # IDE
 .idea/
@@ -41,11 +37,40 @@ yarn-error.log*
 *.swo
 .DS_Store
 
-# Cache
-.cache/
-.pytest_cache/
+# Testing
 .coverage
 htmlcov/
+.pytest_cache/
+.tox/
+
+# Build artifacts
+*.manifest
+*.spec
+.cache
+node_modules/
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+
+# Local development
+*.local
+.local/
+
+# Temporary files
+*.tmp
+*.temp
+.*.swp
+*~
+
+# Node
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Cache
+.cache/
 
 # Build
 *.pbxuser
@@ -56,17 +81,11 @@ htmlcov/
 project.xcworkspace/
 xcuserdata/
 
-# Logs
-logs
-*.log
-
-# Local development
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
 # Lock files
 # package-lock.json
 # yarn.lock
-# poetry.lock 
+# poetry.lock
+
+# Project specific
+TO-DO.md
+prompt.sh 

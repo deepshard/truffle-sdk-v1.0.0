@@ -140,7 +140,6 @@ def validate_manifest_json(manifest_path: Path) -> bool:
 def validate_main_py(main_py_path: Path) -> bool:
     """
     Validate main.py file.
-    Verified against deprecated version's Python validation.
     
     Args:
         main_py_path: Path to main.py
@@ -165,12 +164,8 @@ def validate_main_py(main_py_path: Path) -> bool:
         visitor = ToolVisitor()
         visitor.visit(tree)
         
-        if not visitor.has_tool_class:
-            log.error("No tool class found")
-            return False
-            
         if not visitor.has_tool_method:
-            log.error("No @truffle.tool methods found")
+            log.error("No @truffle.tool decorated function/method found")
             return False
             
         if not visitor.has_launch_call:
@@ -194,29 +189,56 @@ class ToolVisitor(ast.NodeVisitor):
     """AST visitor for validating Truffle tool structure."""
     
     def __init__(self):
-        self.has_tool_class = False
         self.has_tool_method = False
         self.has_launch_call = False
         self.tool_methods: Set[str] = set()
+
+    def _check_truffle_decorator(self, decorator: ast.AST, attr_name: str) -> bool:
+        """Check if a decorator is a truffle.{attr_name} decorator."""
+        if isinstance(decorator, ast.Call):
+            # Handle @truffle.tool() or @truffle.args() with arguments
+            return (
+                isinstance(decorator.func, ast.Attribute)
+                and isinstance(decorator.func.value, ast.Name)
+                and decorator.func.value.id == "truffle"
+                and decorator.func.attr == attr_name
+            )
+        elif isinstance(decorator, ast.Attribute):
+            # Handle @truffle.tool or @truffle.args without arguments
+            return (
+                isinstance(decorator.value, ast.Name)
+                and decorator.value.id == "truffle"
+                and decorator.attr == attr_name
+            )
+        return False
+
+    def _validate_tool_decorators(self, decorators: List[ast.AST]) -> bool:
+        """Validate that a function/method has the required truffle decorators."""
+        has_tool = False
+        has_args = False
         
+        for decorator in decorators:
+            if self._check_truffle_decorator(decorator, "tool"):
+                has_tool = True
+            elif self._check_truffle_decorator(decorator, "args"):
+                has_args = True
+                
+        return has_tool  # args decorator is optional
+
+    def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+        """Visit function definition."""
+        if self._validate_tool_decorators(node.decorator_list):
+            self.has_tool_method = True
+            self.tool_methods.add(node.name)
+
     def visit_ClassDef(self, node: ast.ClassDef) -> None:
         """Visit class definition."""
-        # Check if this is a tool class
-        if node.name.endswith("Tool"):
-            self.has_tool_class = True
-            
-        # Visit class body
+        # Visit class body for methods
         for item in node.body:
             if isinstance(item, ast.FunctionDef):
-                for decorator in item.decorator_list:
-                    if isinstance(decorator, ast.Attribute):
-                        if (
-                            isinstance(decorator.value, ast.Name)
-                            and decorator.value.id == "truffle"
-                            and decorator.attr == "tool"
-                        ):
-                            self.has_tool_method = True
-                            self.tool_methods.add(item.name)
+                if self._validate_tool_decorators(item.decorator_list):
+                    self.has_tool_method = True
+                    self.tool_methods.add(item.name)
                             
     def visit_Expr(self, node: ast.Expr) -> None:
         """Visit expression."""

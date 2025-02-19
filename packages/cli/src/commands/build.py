@@ -4,21 +4,68 @@ Project Build Command
 This module handles the building and packaging of Truffle projects. It provides functionality to:
 - Validate project structure and required files
 - Package project files into a distributable .truffle archive
+- Output tools to the system's truffle directory
 - Report build metrics and file sizes
-- Ensure proper compression and organization of project assets
 """
 
 import typer
 from pathlib import Path
 import zipfile
-from typing import Optional
+import json
+from typing import Optional, List
+from dataclasses import dataclass
 
-from utils.logger import log, Symbols
-from templates.validation import (
+from ..utils.logger import log, Symbols
+from ..utils.validation import (
+    validate_project_structure,
     validate_main_py,
-    validate_manifest,
-    validate_requirements
+    validate_manifest_json,
+    validate_requirements_txt
 )
+from ..utils.config import (
+    get_sdk_version,
+    load_manifest
+)
+
+TRUFFLE_DIR = Path.home() / "truffle"
+
+@dataclass
+class TruffleFile:
+    """Represents a file in a Truffle project."""
+    path: Path
+    name: str
+    relative_path: Path
+
+    @classmethod
+    def from_path(cls, file_path: Path, base_dir: Path) -> 'TruffleFile':
+        """Create a TruffleFile from a path."""
+        return cls(
+            path=file_path,
+            name=file_path.name,
+            relative_path=file_path.relative_to(base_dir)
+        )
+
+    def validate(self) -> None:
+        """Validate the file exists and is accessible."""
+        if not self.path.exists():
+            raise ValueError(f"File not found: {self.path}")
+        if not self.path.is_file():
+            raise ValueError(f"Not a file: {self.path}")
+        if not self.path.is_relative_to(self.path.parent):
+            raise ValueError(f"Invalid relative path: {self.path}")
+
+def _ensure_truffle_dir() -> Path:
+    """
+    Ensure the truffle directory exists.
+    Creates it if it doesn't exist.
+    
+    Returns:
+        Path to the truffle directory
+    """
+    if not TRUFFLE_DIR.exists():
+        TRUFFLE_DIR.mkdir(parents=True)
+        log.detail(f"Created truffle directory at {TRUFFLE_DIR}")
+    return TRUFFLE_DIR
 
 def _format_size(size_bytes: int) -> str:
     """Format file size with appropriate units."""
@@ -28,43 +75,74 @@ def _format_size(size_bytes: int) -> str:
         size_bytes /= 1024
     return f"{size_bytes:.1f}TB"
 
-def _assemble_zip(dir_path: Path, output_path: Optional[Path] = None) -> Path:
+def _get_tool_name(project_path: Path) -> str:
     """
-    Create a zip file from a directory and all its contents.
+    Get the tool name from manifest.json.
     
     Args:
-        dir_path: Path to the directory to zip
-        output_path: Optional custom output path, defaults to dir_name.truffle
+        project_path: Path to the project directory
         
     Returns:
-        Path to the created zip file
+        Tool name from manifest
         
     Raises:
-        NotADirectoryError: If dir_path is not a directory
-        FileExistsError: If output_path already exists
+        ValueError: If manifest is invalid or missing name
     """
-    if not dir_path.is_dir():
-        raise NotADirectoryError(f"{dir_path} is not a directory")
+    manifest_path = project_path / "manifest.json"
+    try:
+        manifest = json.loads(manifest_path.read_text())
+        name = manifest.get("name", "").strip().lower()
+        if not name:
+            raise ValueError("Tool name not found in manifest.json")
+        return name
+    except Exception as e:
+        raise ValueError(f"Failed to read tool name from manifest: {str(e)}")
 
-    # If no output path specified, create zip in parent dir with same name
-    if output_path is None:
-        output_path = dir_path.parent / f"{dir_path.name}.truffle"
+def _collect_project_files(source_dir: Path) -> List[TruffleFile]:
+    """
+    Collect all files from the project directory.
+    
+    Args:
+        source_dir: Source directory to scan
+        
+    Returns:
+        List of TruffleFile objects
+        
+    Raises:
+        NotADirectoryError: If source_dir is not a directory
+    """
+    if not source_dir.is_dir():
+        raise NotADirectoryError(f"{source_dir} is not a directory")
 
-    # Ensure we don't overwrite existing files
-    if output_path.exists():
-        raise FileExistsError(f"Output path {output_path} already exists")
+    files: List[TruffleFile] = []
+    for file_path in source_dir.rglob("*"):
+        if file_path.is_file():
+            truffle_file = TruffleFile.from_path(file_path, source_dir)
+            truffle_file.validate()
+            files.append(truffle_file)
+    return files
+
+def _assemble_tool(source_dir: Path, output_path: Path) -> None:
+    """
+    Create a .truffle file from a directory.
+    
+    Args:
+        source_dir: Source directory to package
+        output_path: Output path for the .truffle file
+        
+    Raises:
+        NotADirectoryError: If source_dir is not a directory
+    """
+    # Create parent directory if it doesn't exist
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # Collect and validate all files
+    project_files = _collect_project_files(source_dir)
 
     with zipfile.ZipFile(output_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-        # Walk through all files and directories
-        for file_path in dir_path.rglob("*"):
-            if file_path.is_file():
-                # Calculate relative path for the archive
-                rel_path = file_path.relative_to(dir_path)
-                # Prepend the directory name to create the correct structure
-                arcname = str(Path(dir_path.name) / rel_path)
-                zipf.write(file_path, arcname)
-
-    return output_path
+        for file in project_files:
+            arcname = str(Path(source_dir.name) / file.relative_path)
+            zipf.write(file.path, arcname)
 
 def build(
     project_path: Path = typer.Argument(
@@ -82,44 +160,62 @@ def build(
     )
 ) -> None:
     """Build a Truffle project into a distributable package."""
-    with log.group("Building Truffle app", emoji=Symbols.HAMMER):
-        log.info("Building Truffle app", version="0.6.5")
+    with log.group("Building Truffle tool", emoji=Symbols.HAMMER):
+        log.info("Building Truffle tool", version=get_sdk_version())
         log.detail(f"{Symbols.FOLDER} Source: {project_path}")
         
         try:
             # Validate project structure
             with log.group("Validating project structure", emoji=Symbols.MAGNIFIER):
-                main_py = project_path / "main.py"
-                manifest_json = project_path / "manifest.json"
-                requirements_txt = project_path / "requirements.txt"
-                
-                log.check("main.py", version="1.0.0")
-                log.check("manifest.json", version="1")
-                log.check("requirements.txt")
-                
                 if check_files:
+                    if not validate_project_structure(project_path):
+                        raise ValueError("Invalid project structure")
+                        
+                    main_py = project_path / "main.py"
+                    manifest_json = project_path / "manifest.json"
+                    requirements_txt = project_path / "requirements.txt"
+                    
                     if not validate_main_py(main_py):
-                        raise ValueError("Invalid main.py file")
-                    if not validate_manifest(manifest_json):
+                        raise ValueError("Invalid main.py file - ensure it has a @truffle.tool decorated function/method")
+                    if not validate_manifest_json(manifest_json):
                         raise ValueError("Invalid manifest.json file")
-                    if not validate_requirements(requirements_txt):
+                    if not validate_requirements_txt(requirements_txt):
                         raise ValueError("Invalid requirements.txt file")
+                    
+                    log.check("Project structure validated")
+            
+            # Get tool name and prepare output path
+            tool_name = _get_tool_name(project_path)
+            truffle_dir = _ensure_truffle_dir()
+            output_path = truffle_dir / f"{tool_name}.truffle"
+            
+            # Check if tool already exists
+            if output_path.exists():
+                if not typer.confirm(f"Tool {tool_name} already exists. Overwrite?", default=False):
+                    log.warning("Build cancelled", [{
+                        "key": "Reason",
+                        "value": "Tool already exists"
+                    }])
+                    raise typer.Exit(1)
+                output_path.unlink()
             
             # Build package
-            with log.group("Assembling package", emoji=Symbols.PACKAGE):
-                # Calculate sizes and create archive
+            with log.group("Assembling tool package", emoji=Symbols.PACKAGE):
+                # Calculate sizes
                 orig_size = sum(f.stat().st_size for f in project_path.rglob('*') if f.is_file())
                 file_count = len(list(project_path.rglob('*')))
                 
-                zip_path = _assemble_zip(project_path)
-                file_size = zip_path.stat().st_size
+                # Create the package
+                _assemble_tool(project_path, output_path)
+                file_size = output_path.stat().st_size
                 
                 log.metric(str(file_count), "files processed")
                 log.metric(_format_size(file_size), f"compressed from {_format_size(orig_size)}")
             
             # Success message
             log.success("Build successful!")
-            log.detail(f"{Symbols.PACKAGE} Output: {zip_path.name}")
+            log.detail(f"{Symbols.PACKAGE} Tool: {tool_name}")
+            log.detail(f"{Symbols.FOLDER} Location: {output_path}")
             
         except Exception as e:
             log.error("Build failed", {
