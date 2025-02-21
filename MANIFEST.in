@@ -1,2 +1,3 @@
 include packages/cli/src/assets/default_app.png
-recursive-include packages/cli/src/assets * 
+recursive-include packages/cli/src/assets *
+recursive-include packages *.py 
