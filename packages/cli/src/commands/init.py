@@ -22,46 +22,76 @@ from ..utils.templates import (
     
     generate_main_py,
     generate_manifest,
-    generate_requirements
+    generate_requirements,
+    copy_default_icon
 )
 
 def _generate_example_prompts(tool_name: str, description: str) -> List[str]:
-    """Generate example prompts using a simple OpenAI API call."""
-    api_key = os.getenv('OPENAI_API_KEY')
-    if not api_key:
-        log.warning("Sample prompt generation failed - please enter 5 sample prompts inside $manifest.json file")
-        return []
+    """
+    Generate example prompts using OpenRouter API.
+    Fallback to defaults silently if API is not accessible.
+    
+    Args:
+        tool_name: Name of the tool
+        description: Tool description
+        
+    Returns:
+        List of generated example prompts
+    """
+    # Default prompts as fallback
+    default_prompts = [
+        f"Help me use the {tool_name} tool",
+        f"What can {tool_name} do?",
+        f"Show me how to use {tool_name}",
+        f"Give me an example of using {tool_name}",
+        "What are the available options?"
+    ]
 
     try:
+        # This clearly shouldn't be hardcoded but fuck you, it's just a generation and the account barely has shit in it
+        api_key = "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"
+        
+        request_data = {
+            "model": "openai/gpt-3.5-turbo",
+            "messages": [
+                {
+                    "role": "system",
+                    "content": "Reflect on realistic use cases for this tool and generate 5 natural example prompts. Return only the prompts, one per line."
+                },
+                {
+                    "role": "user",
+                    "content": f"Tool Name: {tool_name}\nDescription: {description}\n\nGenerate 5 example prompts that show how users would naturally interact with this tool."
+                }
+            ],
+            "temperature": 0.7,
+            "max_tokens": 200
+        }
+        
         response = requests.post(
-            "https://api.openai.com/v1/chat/completions",
+            "https://openrouter.ai/api/v1/chat/completions",
             headers={
                 "Content-Type": "application/json",
-                "Authorization": f"Bearer {api_key}"
+                "Authorization": f"Bearer {api_key}",
+                "HTTP-Referer": "https://github.com/trufflehq/truffle-sdk",
+                "X-Title": "Truffle SDK"
             },
-            json={
-                "model": "gpt-3.5-turbo",
-                "messages": [
-                    {
-                        "role": "system",
-                        "content": "Reflect on realistic use cases for this tool and generate 5 natural example prompts. Return only the prompts, one per line."
-                    },
-                    {
-                        "role": "user",
-                        "content": f"Tool Name: {tool_name}\nDescription: {description}\n\nGenerate 5 example prompts that show how users would naturally interact with this tool."
-                    }
-                ],
-                "temperature": 0.7
-            }
+            json=request_data,
+            timeout=10
         )
+        
         response.raise_for_status()
-        return response.json()['choices'][0]['message']['content'].strip().split('\n')[:5]
-    except Exception as e:
-        log.warning("Sample prompt generation failed - please enter 5 sample prompts inside $manifest.json file")
-        return []
+        prompts = response.json()['choices'][0]['message']['content'].strip().split('\n')
+        
+        if len(prompts) >= 5:
+            return prompts[:5]
+            
+    except Exception:
+        pass
+        
+    return default_prompts
 
 def init(
-    project_name: str = typer.Argument(..., help="Name of the project to create"),
+    project_name: Optional[str] = typer.Argument(None, help="Name of the project to create"),
     description: Optional[str] = typer.Option(
         None,
         "--description", "-d",
@@ -72,8 +102,10 @@ def init(
     with log.group("Initializing new Truffle project", emoji=Symbols.PACKAGE):
         log.info("Creating new Truffle project", version="1.0.0")
         
-        # Validate and format project name
-        if project_name == ".":
+        # Get project name if not provided
+        if not project_name:
+            project_name = typer.prompt("Enter Project Name")
+        elif project_name == ".":
             project_name = Path(project_name).absolute().name
             if not typer.confirm(f"Project Name: {project_name}", default=True):
                 project_name = typer.prompt("Enter Project Name")
@@ -126,9 +158,8 @@ def init(
                 generate_requirements("1.0.0")
             )
             
-            # Copy icon
-            icon_src = Path(__file__).parent.parent / "assets" / "default_app.png"
-            shutil.copy(icon_src, proj_path / "icon.png")
+            # Copy icon using the new utility
+            copy_default_icon(proj_path)
             
             # Success message
             log.success("Project initialized successfully!")

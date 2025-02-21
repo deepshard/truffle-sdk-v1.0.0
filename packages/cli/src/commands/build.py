@@ -169,20 +169,20 @@ def build(
             with log.group("Validating project structure", emoji=Symbols.MAGNIFIER):
                 if check_files:
                     if not validate_project_structure(project_path):
-                        raise ValueError("Invalid project structure")
+                        raise ValueError("Project structure validation failed - try initializing your project again!")
                         
                     main_py = project_path / "main.py"
                     manifest_json = project_path / "manifest.json"
                     requirements_txt = project_path / "requirements.txt"
                     
                     if not validate_main_py(main_py):
-                        raise ValueError("Invalid main.py file - ensure it has a @truffle.tool decorated function/method")
+                        raise ValueError("Don't forget to create your tool in main.py!")
                     if not validate_manifest_json(manifest_json):
-                        raise ValueError("Invalid manifest.json file")
+                        raise ValueError("There might be something wrong with your manifest.json - try initializing your project again!")
                     if not validate_requirements_txt(requirements_txt):
-                        raise ValueError("Invalid requirements.txt file")
+                        raise ValueError("Your requirements.txt seems to be missing or invalid - try initializing your project again!")
                     
-                    log.check("Project structure validated")
+                    log.success("Everything looks good! 🎉")
             
             # Get tool name and prepare output path
             tool_name = _get_tool_name(project_path)
@@ -213,13 +213,12 @@ def build(
                 log.metric(_format_size(file_size), f"compressed from {_format_size(orig_size)}")
             
             # Success message
-            log.success("Build successful!")
+            log.success("Build successful! 🎉")
             log.detail(f"{Symbols.PACKAGE} Tool: {tool_name}")
             log.detail(f"{Symbols.FOLDER} Location: {output_path}")
             
         except Exception as e:
             log.error("Build failed", {
-                "Error": str(e),
-                "Location": str(project_path.absolute())
+                "Error": str(e)
             })
             raise typer.Exit(1)

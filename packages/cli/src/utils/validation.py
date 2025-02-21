@@ -29,13 +29,13 @@ def validate_project_structure(project_path: Path) -> bool:
     try:
         # Check directory exists
         if not project_path.exists():
-            log.error("Project directory not found", {
+            log.error("Oops! The project folder seems to be missing. Try running the command again!", {
                 "path": str(project_path)
             })
             return False
             
         if not project_path.is_dir():
-            log.error("Path is not a directory", {
+            log.error("Hmm, that's not a folder. Please specify a valid project folder!", {
                 "path": str(project_path)
             })
             return False
@@ -51,14 +51,14 @@ def validate_project_structure(project_path: Path) -> bool:
         for file in required_files:
             file_path = project_path / file
             if not file_path.exists():
-                log.error("Missing required file", {
+                log.error(f"Looks like {file} is missing! Your project might be corrupted - try initializing it again.", {
                     "file": file,
                     "path": str(file_path)
                 })
                 return False
                 
             if not file_path.is_file():
-                log.error("Invalid file type", {
+                log.error(f"There's something wrong with {file}. Try initializing your project again!", {
                     "file": file,
                     "path": str(file_path)
                 })
@@ -67,7 +67,7 @@ def validate_project_structure(project_path: Path) -> bool:
         return True
         
     except Exception as e:
-        log.error("Failed to validate project structure", {
+        log.error("Something went wrong while checking your project structure. Try again!", {
             "error": str(e)
         })
         return False
@@ -75,7 +75,6 @@ def validate_project_structure(project_path: Path) -> bool:
 def validate_manifest_json(manifest_path: Path) -> bool:
     """
     Validate manifest.json file.
-    Verified against deprecated version's manifest validation.
     
     Args:
         manifest_path: Path to manifest.json
@@ -98,13 +97,13 @@ def validate_manifest_json(manifest_path: Path) -> bool:
         
         for field, field_type in required_fields.items():
             if field not in manifest:
-                log.error("Missing required field", {
+                log.error(f"Your manifest.json is missing the {field} field. Try initializing your project again!", {
                     "field": field
                 })
                 return False
                 
             if not isinstance(manifest[field], field_type):
-                log.error("Invalid field type", {
+                log.error(f"The {field} field in manifest.json looks wrong. Try initializing your project again!", {
                     "field": field,
                     "expected": field_type.__name__,
                     "got": type(manifest[field]).__name__
@@ -113,26 +112,26 @@ def validate_manifest_json(manifest_path: Path) -> bool:
                 
         # Validate values
         if not manifest["name"]:
-            log.error("Empty project name")
+            log.error("Your project needs a name in manifest.json!")
             return False
             
         if not manifest["description"]:
-            log.error("Empty project description")
+            log.error("Don't forget to add a description in manifest.json!")
             return False
             
         if not manifest["example_prompts"]:
-            log.error("No example prompts provided")
+            log.error("Your manifest.json needs some example prompts!")
             return False
             
         return True
         
     except json.JSONDecodeError as e:
-        log.error("Invalid JSON in manifest", {
+        log.error("Your manifest.json file seems corrupted. Try initializing your project again!", {
             "error": str(e)
         })
         return False
     except Exception as e:
-        log.error("Failed to validate manifest", {
+        log.error("Something went wrong with manifest.json. Try initializing your project again!", {
             "error": str(e)
         })
         return False
@@ -152,11 +151,11 @@ def validate_main_py(main_py_path: Path) -> bool:
         
         # Check basic imports
         if "import truffle" not in content:
-            log.error("Missing truffle import")
+            log.error("Don't forget to import truffle in your main.py!")
             return False
             
         if ".launch()" not in content:
-            log.error("Missing .launch() call")
+            log.error("Your main.py needs to call .launch() to start your tool!")
             return False
             
         # Parse and validate AST
@@ -165,22 +164,22 @@ def validate_main_py(main_py_path: Path) -> bool:
         visitor.visit(tree)
         
         if not visitor.has_tool_method:
-            log.error("No @truffle.tool decorated function/method found")
+            log.error("Looks like you haven't created your tool yet! Add a function with @truffle.tool decorator.")
             return False
             
         if not visitor.has_launch_call:
-            log.error("No app.launch() call found")
+            log.error("Don't forget to launch your app with app.launch()!")
             return False
             
         return True
         
     except SyntaxError as e:
-        log.error("Invalid Python syntax", {
+        log.error("There's a syntax error in your main.py. Check your code!", {
             "error": str(e)
         })
         return False
     except Exception as e:
-        log.error("Failed to validate main.py", {
+        log.error("Something's wrong with your main.py. Try initializing your project again!", {
             "error": str(e)
         })
         return False

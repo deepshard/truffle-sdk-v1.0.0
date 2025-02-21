@@ -9,10 +9,12 @@ This module provides template generation utilities for Truffle projects:
 """
 
 import shutil
+import os
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 
 from .config import get_sdk_version
+from .logger import log
 
 def generate_main_py(project_name: str, manifest: Dict[str, Any]) -> str:
     """
@@ -127,6 +129,37 @@ def copy_project_template(
                 content = content.replace(f"{{{{ {key} }}}}", str(value))
             file.write_text(content)
 
+def get_default_icon_path() -> Path:
+    """
+    Get the path to the default app icon, trying multiple possible locations.
+    
+    Returns:
+        Path to the default icon
+        
+    Raises:
+        FileNotFoundError: If icon cannot be found in any location
+    """
+    # Try multiple possible locations
+    possible_paths = [
+        # Direct package path
+        Path(__file__).parent.parent / "assets" / "default_app.png",
+        # Installed package path
+        Path(os.path.expanduser("~")) / ".truffle" / "assets" / "default_app.png",
+        # System-wide installation
+        Path("/usr/local/share/truffle/assets/default_app.png"),
+        # Current directory
+        Path.cwd() / "assets" / "default_app.png"
+    ]
+    
+    for path in possible_paths:
+        if path.is_file():
+            return path
+            
+    raise FileNotFoundError(
+        "Could not find default_app.png in any of the expected locations: " +
+        ", ".join(str(p) for p in possible_paths)
+    )
+
 def copy_default_icon(target_path: Path) -> None:
     """
     Copy default app icon to project.
@@ -134,5 +167,10 @@ def copy_default_icon(target_path: Path) -> None:
     Args:
         target_path: Path to copy icon to
     """
-    icon_src = Path(__file__).parent.parent / "assets" / "default_app.png"
-    shutil.copy(icon_src, target_path / "icon.png")
+    try:
+        icon_src = get_default_icon_path()
+        shutil.copy(icon_src, target_path / "icon.png")
+    except FileNotFoundError as e:
+        log.warning(f"Could not copy default icon: {e}")
+        # Create an empty icon file as fallback
+        (target_path / "icon.png").touch()
