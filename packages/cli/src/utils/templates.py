@@ -11,6 +11,7 @@ This module provides template generation utilities for Truffle projects:
 import shutil
 import os
 from pathlib import Path
+import importlib.resources as pkg_resources
 from typing import Dict, Any, List, Optional
 
 from .config import get_sdk_version
@@ -131,34 +132,24 @@ def copy_project_template(
 
 def get_default_icon_path() -> Path:
     """
-    Get the path to the default app icon, trying multiple possible locations.
+    Get the path to the default app icon using package resources.
     
     Returns:
         Path to the default icon
         
     Raises:
-        FileNotFoundError: If icon cannot be found in any location
+        FileNotFoundError: If icon cannot be found in package
     """
-    # Try multiple possible locations
-    possible_paths = [
-        # Direct package path
-        Path(__file__).parent.parent / "assets" / "default_app.png",
-        # Installed package path
-        Path(os.path.expanduser("~")) / ".truffle" / "assets" / "default_app.png",
-        # System-wide installation
-        Path("/usr/local/share/truffle/assets/default_app.png"),
-        # Current directory
-        Path.cwd() / "assets" / "default_app.png"
-    ]
-    
-    for path in possible_paths:
-        if path.is_file():
-            return path
-            
-    raise FileNotFoundError(
-        "Could not find default_app.png in any of the expected locations: " +
-        ", ".join(str(p) for p in possible_paths)
-    )
+    try:
+        # Get the package's installed location
+        import cli.src.assets
+        with pkg_resources.path(cli.src.assets, 'default_app.png') as icon_path:
+            return Path(icon_path)
+    except Exception as e:
+        raise FileNotFoundError(
+            "Could not find default_app.png in package resources. " +
+            f"Error: {str(e)}"
+        )
 
 def copy_default_icon(target_path: Path) -> None:
     """
