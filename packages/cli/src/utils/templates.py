@@ -142,13 +142,12 @@ def get_default_icon_path() -> Path:
     """
     try:
         # Get the package's installed location
-        import cli.src.assets
-        with pkg_resources.path(cli.src.assets, 'default_app.png') as icon_path:
+        import packages.cli.src.assets as assets
+        with pkg_resources.path(assets, 'default_app.png') as icon_path:
             return Path(icon_path)
     except Exception as e:
         raise FileNotFoundError(
-            "Could not find default_app.png in package resources. " +
-            f"Error: {str(e)}"
+            "Oops! Couldn't find the default icon. Try initializing your project again! 🎨"
         )
 
 def copy_default_icon(target_path: Path) -> None:
@@ -162,6 +161,4 @@ def copy_default_icon(target_path: Path) -> None:
         icon_src = get_default_icon_path()
         shutil.copy(icon_src, target_path / "icon.png")
     except FileNotFoundError as e:
-        log.warning(f"Could not copy default icon: {e}")
-        # Create an empty icon file as fallback
-        (target_path / "icon.png").touch()
+        log.warning("Using an empty icon since we couldn't find the default one!")
