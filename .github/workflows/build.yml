@@ -28,10 +28,34 @@ jobs:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       run: ./scripts/build.sh
     
-    # Just build the package without publishing
+    # Build the package and create a GitHub release
     - name: Build package
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       env:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       run: |
         python -m build
+        
+    - name: Extract version
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      id: version
+      run: |
+        VERSION=$(grep -m 1 'version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+        echo "Extracted version: $VERSION"
+        
+    - name: Create GitHub Release
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          dist/*.whl
+          dist/*.tar.gz
+        name: Release v${{ env.VERSION }}
+        tag_name: v${{ env.VERSION }}
+        body: |
+          Truffle SDK v${{ env.VERSION }} Release
+          
+          This release includes the latest version of the Truffle SDK for building AI-powered tools.
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
