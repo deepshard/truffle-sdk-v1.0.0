@@ -1,0 +1,14 @@
+{
+    "app_bundle_id": "c4be5613-68f4-4a31-8ff7-4788971238ba",
+    "description": "a tool to test code",
+    "example_prompts": [
+        "I need to [specific task] - can you use Tester to help me?",
+        "What's the fastest way to accomplish [goal] using Tester?",
+        "Could you [desired outcome] for me? I think Tester might help.",
+        "I'm trying to [user's objective] - is Tester the right tool for this?",
+        "Can you walk me through solving this problem step by step?"
+    ],
+    "manifest_version": 1,
+    "name": "tester",
+    "packages": []
+}

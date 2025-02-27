@@ -54,7 +54,9 @@ dev = [
     "black>=22.0.0",
     "isort>=5.10.0",
     "mypy>=0.950",
-    "flake8>=4.0.0"
+    "flake8>=4.0.0",
+    "grpcio-tools>=1.69.0",
+    "build>=1.0.0"
 ]
 
 [build-system]

@@ -1,6 +1,18 @@
 #!/bin/bash
 set -e
 
+# Log if API key is set and its source
+if [ ! -z "$OPENAI_API_KEY" ]; then
+    echo "OPENAI_API_KEY is set. Length: ${#OPENAI_API_KEY} characters"
+    if [ ! -z "$GITHUB_ACTIONS" ]; then
+        echo "Running in GitHub Actions - API key is from GitHub Secrets"
+    else
+        echo "API injecter? I barely know her!"
+    fi
+else
+    echo "OPENAI_API_KEY is not set"
+fi
+
 # Create a config file with the API key if available
 if [ ! -z "$OPENAI_API_KEY" ]; then
     echo "Adding prompt generation..."
