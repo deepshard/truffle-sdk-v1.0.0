@@ -25,11 +25,12 @@ from ..utils.templates import (
     generate_requirements,
     copy_default_icon
 )
+from ..config.api_config import OPENAI_API_KEY
 
 def _generate_example_prompts(tool_name: str, description: str) -> List[str]:
     """
-    Generate example prompts using OpenRouter API.
-    Fallback to defaults silently if API is not accessible.
+    Generate example prompts using OpenAI API.
+    Fallback to defaults silently if API key is not available.
     
     Args:
         tool_name: Name of the tool
@@ -38,21 +39,20 @@ def _generate_example_prompts(tool_name: str, description: str) -> List[str]:
     Returns:
         List of generated example prompts
     """
-    # Default prompts as fallback
     default_prompts = [
-        f"Help me use the {tool_name} tool",
-        f"What can {tool_name} do?",
-        f"Show me how to use {tool_name}",
-        f"Give me an example of using {tool_name}",
-        "What are the available options?"
+        f"I need to [specific task] - can you use {tool_name} to help me?",
+        f"What's the fastest way to accomplish [goal] using {tool_name}?",
+        f"Could you [desired outcome] for me? I think {tool_name} might help.",
+        f"I'm trying to [user's objective] - is {tool_name} the right tool for this?",
+        "Can you walk me through solving this problem step by step?"
     ]
 
     try:
-        # This clearly shouldn't be hardcoded but fuck you, it's just a generation and the account barely has shit in it
-        api_key = "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"
-        
+        if not OPENAI_API_KEY:
+            return default_prompts
+            
         request_data = {
-            "model": "openai/gpt-3.5-turbo",
+            "model": "gpt-3.5-turbo",
             "messages": [
                 {
                     "role": "system",
@@ -68,12 +68,10 @@ def _generate_example_prompts(tool_name: str, description: str) -> List[str]:
         }
         
         response = requests.post(
-            "https://openrouter.ai/api/v1/chat/completions",
+            "https://api.openai.com/v1/chat/completions",
             headers={
                 "Content-Type": "application/json",
-                "Authorization": f"Bearer {api_key}",
-                "HTTP-Referer": "https://github.com/trufflehq/truffle-sdk",
-                "X-Title": "Truffle SDK"
+                "Authorization": f"Bearer {OPENAI_API_KEY}"
             },
             json=request_data,
             timeout=10
