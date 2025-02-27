@@ -28,13 +28,10 @@ jobs:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       run: ./scripts/build.sh
     
-    # If you're publishing to PyPI
-    - name: Build and publish
+    # Just build the package without publishing
+    - name: Build package
       if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       env:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
       run: |
         python -m build
-        python -m twine upload dist/* 
