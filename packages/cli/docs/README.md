@@ -24,18 +24,6 @@ truffle build path/to/project
 truffle build --no-check
 ```
 
-## Run Project
-```bash
-# Run in current directory
-truffle run
-
-# Run with arguments
-truffle run -a "argument1" -a "argument2"
-
-# Run specific project
-truffle run path/to/project
-```
-
 ## Project Files
 
 ### main.py
