@@ -9,9 +9,136 @@ This module provides validation functions for protobuf messages:
 """
 
 import typing
+from google.protobuf.descriptor import FieldDescriptor
+from google.protobuf.message import Message
 from ...types.models import TruffleReturnType, ToolMetadata, AppMetadata
 from .. import sdk_pb2
 from ...client.exceptions import ValidationError
+
+def is_numeric_field(field: FieldDescriptor) -> bool:
+    """Check if a field is a numeric type."""
+    numeric_types = [
+        FieldDescriptor.TYPE_DOUBLE,
+        FieldDescriptor.TYPE_FLOAT,
+        FieldDescriptor.TYPE_INT32,
+        FieldDescriptor.TYPE_INT64,
+        FieldDescriptor.TYPE_UINT32,
+        FieldDescriptor.TYPE_UINT64,
+        FieldDescriptor.TYPE_SINT32,
+        FieldDescriptor.TYPE_SINT64,
+        FieldDescriptor.TYPE_FIXED32,
+        FieldDescriptor.TYPE_FIXED64,
+        FieldDescriptor.TYPE_SFIXED32,
+        FieldDescriptor.TYPE_SFIXED64,
+    ]
+    return field.type in numeric_types
+
+def is_float_field(field: FieldDescriptor) -> bool:
+    """Check if a field is a float type."""
+    return field.type in [FieldDescriptor.TYPE_DOUBLE, FieldDescriptor.TYPE_FLOAT]
+
+def validate_field_value(value: Any, field: FieldDescriptor) -> Any:
+    """
+    Validate and convert a field value.
+    
+    Args:
+        value: Value to validate
+        field: Field descriptor
+        
+    Returns:
+        Validated value
+        
+    Raises:
+        TypeError: If value has invalid type
+        ValueError: If value is invalid
+    """
+    if value is None:
+        if field.label == FieldDescriptor.LABEL_REQUIRED:
+            raise ValueError(f"Field {field.name} is required")
+        return get_field_default(field.type)
+        
+    # Handle message types
+    if field.type == FieldDescriptor.TYPE_MESSAGE:
+        if not isinstance(value, (dict, Message)):
+            raise TypeError(
+                f"Field {field.name} must be a Message or dict"
+            )
+        if isinstance(value, dict):
+            msg = field.message_type._concrete_class()
+            for k, v in value.items():
+                setattr(msg, k, v)
+            return msg
+        return value
+        
+    # Handle enum types
+    if field.type == FieldDescriptor.TYPE_ENUM:
+        if isinstance(value, str):
+            if not hasattr(field.enum_type, value):
+                raise ValueError(
+                    f"Invalid enum value '{value}' for field {field.name}"
+                )
+            return getattr(field.enum_type, value)
+        if not isinstance(value, int):
+            raise TypeError(f"Field {field.name} must be an integer or string")
+        if value not in field.enum_type._values_.values():
+            raise ValueError(
+                f"Invalid enum value {value} for field {field.name}"
+            )
+        return value
+        
+    # Handle basic types
+    try:
+        return get_python_type(field.type)(value)
+    except (TypeError, ValueError) as e:
+        raise TypeError(
+            f"Cannot convert value '{value}' to {get_python_type(field.type).__name__} "
+            f"for field {field.name}: {e}"
+        )
+
+def get_python_type(field_type: int) -> Type:
+    """Get Python type for protocol buffer field type."""
+    type_map = {
+        FieldDescriptor.TYPE_DOUBLE: float,
+        FieldDescriptor.TYPE_FLOAT: float,
+        FieldDescriptor.TYPE_INT64: int,
+        FieldDescriptor.TYPE_UINT64: int,
+        FieldDescriptor.TYPE_INT32: int,
+        FieldDescriptor.TYPE_UINT32: int,
+        FieldDescriptor.TYPE_BOOL: bool,
+        FieldDescriptor.TYPE_STRING: str,
+        FieldDescriptor.TYPE_BYTES: bytes,
+        FieldDescriptor.TYPE_MESSAGE: Message,
+        FieldDescriptor.TYPE_ENUM: int,
+    }
+    if field_type not in type_map:
+        raise ValueError(f"Unsupported field type: {field_type}")
+    return type_map[field_type]
+
+def get_field_default(field_type: int) -> Any:
+    """Get default value for protocol buffer field type."""
+    if field_type in {
+        FieldDescriptor.TYPE_DOUBLE,
+        FieldDescriptor.TYPE_FLOAT,
+        FieldDescriptor.TYPE_INT64,
+        FieldDescriptor.TYPE_UINT64,
+        FieldDescriptor.TYPE_INT32,
+        FieldDescriptor.TYPE_UINT32,
+    }:
+        return 0
+        
+    if field_type == FieldDescriptor.TYPE_BOOL:
+        return False
+        
+    if field_type == FieldDescriptor.TYPE_STRING:
+        return ""
+        
+    if field_type == FieldDescriptor.TYPE_BYTES:
+        return b""
+        
+    if field_type == FieldDescriptor.TYPE_ENUM:
+        return 0
+        
+    return None
 
 def validate_truffle_type(obj: typing.Any) -> None:
     """Validate that an object is a valid Truffle type."""
@@ -76,6 +203,10 @@ def validate_app_metadata(metadata: AppMetadata) -> None:
         raise ValidationError("App description cannot be empty")
     if not metadata.goal:
         raise ValidationError("App goal cannot be empty")
+    if metadata.manifest_version < 1:
+        raise ValidationError("Manifest version must be positive")
+    if not isinstance(metadata.example_prompts, list):
+        raise ValidationError("Example prompts must be a list")
 
 def validate_generate_request(request: sdk_pb2.GenerateRequest) -> None:
     """Validate that a GenerateRequest message is valid."""

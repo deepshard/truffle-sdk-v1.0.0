@@ -88,4 +88,16 @@ xcuserdata/
 
 # Project specific
 TO-DO.md
-prompt.sh 
+prompt.sh
+PR.md
+CODEREVIEW.md
+
+# Proprietary implementation directories
+packages/sdk/src/toproto/
+packages/sdk/src/types/
+packages/sdk/src/tools/
+packages/sdk/src/client/
+
+# Keep only the public interface files
+!packages/sdk/src/platform/
+!packages/sdk/src/__init__.py 

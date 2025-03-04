@@ -1,51 +1,36 @@
 """
 Truffle SDK
 
-A Python SDK for interacting with Truffle's AI platform.
-Based on deprecated SDK version 0.5.3.
+Core SDK implementation for the Truffle platform.
+
+PROPRIETARY CODE - DO NOT DISTRIBUTE
+This package contains proprietary implementation details.
+Unauthorized copying, modification, distribution, or use of this code is strictly prohibited.
+
+Features:
+- Type-safe interfaces
+- Tool management
+- Platform integration
+- Error handling
 """
 
-from .client.grpc import GRPCClient
-from .tools.utils import validate_tool_args
-from .types.requests import (
-    GenerateRequest,
-    GetModelsRequest,
-    SystemToolRequest,
-    ToolUpdateRequest,
-    UserRequest,
-    EmbedRequest
-)
-from .types.responses import (
-    GenerateResponse,
-    GetModelsResponse,
-    SystemToolResponse,
-    SDKResponse,
-    UserResponse,
-    EmbedResponse
+from .client import TruffleClient
+from .types.models import (
+    TruffleReturnType,
+    ToolMetadata,
+    AppMetadata,
 )
 
-__version__ = "0.5.3"
-
+# Only expose necessary types for public API
 __all__ = [
     # Client
-    "GRPCClient",
+    "TruffleClient",
     
-    # Tools
-    "validate_tool_args",
-    
-    # Request Types
-    "GenerateRequest",
-    "GetModelsRequest",
-    "SystemToolRequest",
-    "ToolUpdateRequest",
-    "UserRequest",
-    "EmbedRequest",
-    
-    # Response Types
-    "GenerateResponse",
-    "GetModelsResponse",
-    "SystemToolResponse",
-    "SDKResponse",
-    "UserResponse",
-    "EmbedResponse",
+    # Types
+    "TruffleReturnType",
+    "ToolMetadata",
+    "AppMetadata",
 ]
+
+# Proprietary implementation details
+__proprietary__ = True
