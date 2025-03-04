@@ -1,1 +1,0 @@
-"""Assets package for CLI tools.""" 
