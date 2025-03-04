@@ -1,0 +1,50 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "trufflesdk"
+version = "0.5.3"  # Maintaining version from deprecated SDK
+description = "Truffle SDK - Python interface for the Truffle platform"
+requires-python = ">=3.8"
+dependencies = [
+    "grpcio>=1.51.1",
+    "grpcio-tools>=1.51.1",
+    "protobuf>=4.21.12",
+    "requests>=2.28.2",
+    "typing-extensions>=4.4.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black>=22.12.0",
+    "isort>=5.11.4",
+    "mypy>=0.991",
+    "pytest>=7.2.1",
+    "pytest-cov>=4.0.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/trufflesdk"]
+
+[tool.hatch.build]
+include = [
+    "src/**/*.py",
+    "src/**/*.proto",
+]
+
+[tool.black]
+line-length = 100
+target-version = ["py38"]
+
+[tool.isort]
+profile = "black"
+line_length = 100
+multi_line_output = 3
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
